@@ -1,3 +1,9 @@
+# Build folders
+/nbproject/
+/dist/
+/build/
+/.gradle/
+
 # Compiled class file
 *.class
 
