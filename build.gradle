@@ -8,8 +8,14 @@
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'application'
+    id 'java-library-distribution'
 }
+
+description = "WS3D-Coppelia"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = '0.1'
 
 repositories {
     flatDir {
@@ -47,10 +53,10 @@ dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
 }
 
-application {
+//application {
     // Define the main class for the application.
-    mainClass = 'Demo.App'
-}
+    //mainClass = 'Demo.App'
+//}
 
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
