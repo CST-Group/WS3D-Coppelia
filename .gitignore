@@ -1,8 +1,8 @@
 # Build folders
-/nbproject/
-/dist/
-/build/
-/.gradle/
+nbproject/
+dist/
+build/
+.gradle/
 
 # Compiled class file
 *.class

@@ -119,24 +119,42 @@ public class Agent extends Identifiable {
         
     }
     
-    public void execCommands(){
+    public void execCommands(List<Thing> inWorldThings){
         synchronized (commandQueue){
             List<String> executed = new ArrayList<>();
             for(String command : commandQueue.keySet()){
                 executed.add(command);
+                Thing thing = null;
                 switch (command){
                     case "move":
                         this.execMove((List<Float>) commandQueue.get(command));
                         break;
                     case "eat":
-                        this.execEatIt((Thing) commandQueue.get(command));
+                        if (commandQueue.get(command) instanceof Integer)
+                            thing = inWorldThings.stream()
+                                    .filter(e->e.checkId((int) commandQueue.get(command)))
+                                    .findFirst()
+                                    .orElse(null);
+                        else
+                            thing = (Thing) commandQueue.get(command);
+                        if (thing != null)
+                            if (thing.isFood())
+                                this.execEatIt(thing);
                         break;
                     case "rotate":
                         this.execRotate();
                         rotate = true;
                         break;
                     case "sackIt":
-                        this.execSackIt((Thing) commandQueue.get(command));
+                        if (commandQueue.get(command) instanceof Integer)
+                            thing = inWorldThings.stream()
+                                    .filter(e->e.checkId((int) commandQueue.get(command)))
+                                    .findFirst()
+                                    .orElse(null);
+                        else
+                            thing = (Thing) commandQueue.get(command);
+                        if (thing != null)
+                            this.execSackIt(thing);
                         break;
                     case "deliver":
                         System.out.println("Exec Deliver");
@@ -160,7 +178,7 @@ public class Agent extends Identifiable {
             initialized = true;
         } else {
             this.updateState(inWorldThings);
-            this.execCommands();
+            this.execCommands(inWorldThings);
         }
     }
     
@@ -172,9 +190,14 @@ public class Agent extends Identifiable {
     
     public void eatIt(Thing thing){
         synchronized (commandQueue) {
-        System.out.println(thing.isFood());
         if (thing.isFood())
             commandQueue.put("eat", thing);
+        }
+    }
+
+    public void eatIt(int thingId){
+        synchronized (commandQueue){
+            commandQueue.put("eat", thingId);
         }
     }
     
@@ -193,6 +216,12 @@ public class Agent extends Identifiable {
     public void sackIt(Thing thing){
         synchronized (commandQueue) {
             commandQueue.put("sackIt", thing);
+        }
+    }
+
+    public void sackIt(int thingId){
+        synchronized (commandQueue){
+            commandQueue.put("sackIt", thingId);
         }
     }
     
