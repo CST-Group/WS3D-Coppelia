@@ -9,7 +9,10 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'java-library-distribution'
+    id 'maven-publish'
 }
+
+group = 'com.github.CST-Group'
 
 description = "WS3D-Coppelia"
 
@@ -71,4 +74,12 @@ artifacts
 {
     //archives javadocJar, sourcesJar
     archives sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
