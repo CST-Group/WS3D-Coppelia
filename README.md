@@ -9,7 +9,7 @@ Version of WS3D to run with CoppeliaSim robotics simulator
 #### 1. CoppeliaSim
 
 The WS3D-Coppelia library uses CoppeliaSim v4.4 for running the environment simulation. If you do not have CoppeliaSim installed in your computer, it is possible to get the appropriate file for your operational system on the [official website](https://www.coppeliarobotics.com/previousVersions) and follow the steps 1 through 3 on this [link](https://gist.github.com/h3ct0r/fa5b85eb0ed2c02132734e19128e4218). 
-> :warning **Make sure to install version 4.4.0** as newer version may not be compatible with the packaged CoppeliaSim API.
+> ⚠️ **Make sure to install version 4.4.0** as newer version may not be compatible with the packaged CoppeliaSim API.
 
 #### 2. Python
 
