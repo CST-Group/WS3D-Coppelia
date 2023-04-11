@@ -1,4 +1,4 @@
-package support;
+package WS3DCoppelia.util;
 
 ///This is how to use it
 //import SoarBridge.NativeUtils;
@@ -28,9 +28,8 @@ import java.lang.reflect.Field;
 /**
  * Simple library class for working with JNI (Java Native Interface)
  * 
- * @see http://frommyplayground.com/how-to-load-native-jni-library-from-jar
  *
- * @author Adam Heirnich <adam@adamh.cz>, http://www.adamh.cz
+ * @author Adam Heirnich adam@adamh.cz, http://www.adamh.cz
  */
 public class NativeUtils {
  
@@ -119,7 +118,7 @@ public class NativeUtils {
      * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after exiting.
      * Method uses String as filename because the pathname is "abstract", not system-dependent.
      * 
-     * @param filename The filename inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
+     * @param path The filename inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
      * @throws IOException If temporary file creation or read/write operation fails
      * @throws IllegalArgumentException If source file (param path) does not exist
      * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters (restriction of {@see File#createTempFile(java.lang.String, java.lang.String)}).

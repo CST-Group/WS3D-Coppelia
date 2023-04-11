@@ -68,6 +68,7 @@ tasks.named('test') {
 }
 
 task sourcesJar(type: Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     classifier = 'sources'
     from sourceSets.main.allSource
 }
@@ -83,4 +84,9 @@ publishing {
             from components.java
         }
     }
+}
+
+javadoc {
+    exclude 'Demo'
+    exclude 'WS3DCoppelia.NativeUtils'
 }
