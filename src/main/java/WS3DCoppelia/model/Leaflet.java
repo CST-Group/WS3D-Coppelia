@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Random;
 
 /**
+ * Models a jewels collection objective. A leaflet is composed of a list of required jewels and the
+ * reward value for its completion.
  *
  * @author bruno
  */
