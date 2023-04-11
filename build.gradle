@@ -62,6 +62,7 @@ tasks.named('test') {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
     }
