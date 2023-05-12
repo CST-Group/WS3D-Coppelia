@@ -14,16 +14,16 @@ import java.util.List;
  */
 public class Constants {
 
-    public static final List<Float> THING_SIZE = Arrays.asList(new Float[]{(float) 0.1, (float) 0.1, (float) 0.1});
+    public static final List<Float> THING_SIZE = Arrays.asList((float) 0.1, (float) 0.1, (float) 0.1);
     public static final float BRICK_HEIGTH = (float) 0.5;
     
-    public static final List<Float> RED_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.25, (float) 0.25});
-    public static final List<Float> GREEN_COLOR = Arrays.asList(new Float[]{(float) 0.25, (float) 0.95, (float) 0.25});
-    public static final List<Float> BLUE_COLOR = Arrays.asList(new Float[]{(float) 0.25, (float) 0.25, (float) 0.95});
-    public static final List<Float> YELLOW_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.95, (float) 0.25});
-    public static final List<Float> MAGENTA_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.25, (float) 0.95});
-    public static final List<Float> WHITE_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.95, (float) 0.95});
-    public static final List<Float> ORANGE_COLOR = Arrays.asList(new Float[]{(float) 0.95, (float) 0.65, (float) 0.25});
+    public static final List<Float> RED_COLOR = Arrays.asList((float) 0.95, (float) 0.25, (float) 0.25);
+    public static final List<Float> GREEN_COLOR = Arrays.asList((float) 0.25, (float) 0.95, (float) 0.25);
+    public static final List<Float> BLUE_COLOR = Arrays.asList((float) 0.25, (float) 0.25, (float) 0.95);
+    public static final List<Float> YELLOW_COLOR = Arrays.asList((float) 0.95, (float) 0.95, (float) 0.25);
+    public static final List<Float> MAGENTA_COLOR = Arrays.asList((float) 0.95, (float) 0.25, (float) 0.95);
+    public static final List<Float> WHITE_COLOR = Arrays.asList((float) 0.95, (float) 0.95, (float) 0.95);
+    public static final List<Float> ORANGE_COLOR = Arrays.asList((float) 0.95, (float) 0.65, (float) 0.25);
     
     public static String BASE_SCRIPT = "#python\n"
             + "\n"
@@ -145,13 +145,29 @@ public class Constants {
     public static int MAX_NUMBER_ITEMS_PER_COLOR = 3;
     public static int NUM_LEAFLET_PER_AGENTS = 3;
 
+    /**
+     * Interface to define an object type. It requires that each object type has defined a
+     * shape (as a primitive form CoppeliaSim), a color (as a RGB values) and a name.
+     *
+     * @see FoodTypes
+     * @see BrickTypes
+     * @see JewelTypes
+     */
     public interface ThingsType {
         public int shape();
         public List<Float> color();
         public String typeName();
     }
+
+
     public enum FoodTypes implements ThingsType{
+        /**
+         * Perishable food. Red sphere.
+         */
         PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300, "P_Food"),
+        /**
+         * Non-perishable food. Brown sphere.
+         */
         NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, ORANGE_COLOR, 150, "NP_Food");
         
         private final int shape;

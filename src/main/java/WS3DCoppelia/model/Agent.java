@@ -19,9 +19,9 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import support.NativeUtils;
 
 /**
+ * Class that encapsulate the agent information and its available actions.
  *
  * @author bruno
  */
@@ -47,7 +47,15 @@ public class Agent extends Identifiable {
     private final float yLimit;
     
     private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
-    
+
+    /**
+     *
+     * @param sim_ The CoppeliaSim api connector.
+     * @param x Initial x coordinate.
+     * @param y Initial y coordinate.
+     * @param width Environment width for determining movement limits.
+     * @param heigth Environment height for determining movement limits.
+     */
     public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth){
         sim = sim_;  
         pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
@@ -59,7 +67,7 @@ public class Agent extends Identifiable {
         }
     }
     
-    public void init(){
+    private void init(){
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
             
@@ -69,7 +77,7 @@ public class Agent extends Identifiable {
         }
     }
     
-    public void updateState(List<Thing> inWorldThings){
+    private void updateState(List<Thing> inWorldThings){
         List<Long> objectsInVision = new ArrayList<Long>();
         try {             
             List<List<Integer>> leafletInfo = new ArrayList<>();
@@ -119,7 +127,7 @@ public class Agent extends Identifiable {
         
     }
     
-    public void execCommands(List<Thing> inWorldThings){
+    private void execCommands(List<Thing> inWorldThings){
         synchronized (commandQueue){
             List<String> executed = new ArrayList<>();
             for(String command : commandQueue.keySet()){
@@ -181,13 +189,24 @@ public class Agent extends Identifiable {
             this.execCommands(inWorldThings);
         }
     }
-    
+
+    /**
+     * Command to control creature movement through the environment.
+     *
+     * @param x The x coordinate of the destination.
+     * @param y The y coordinate of the destination.
+     */
     public void moveTo(float x, float y){
         synchronized (commandQueue) {
             commandQueue.put("move", Arrays.asList(new Float[]{x, y}));
         }
     }
-    
+
+    /**
+     * Command for agent to consume a food from the environment.
+     *
+     * @param thing The object instance of the food to be consumed.
+     */
     public void eatIt(Thing thing){
         synchronized (commandQueue) {
         if (thing.isFood())
@@ -195,36 +214,69 @@ public class Agent extends Identifiable {
         }
     }
 
+    /**
+     * Command for agent to consume a food from the environment.
+     *
+     * @param thingId The ID of the food to be consumed.
+     */
     public void eatIt(int thingId){
         synchronized (commandQueue){
             commandQueue.put("eat", thingId);
         }
     }
-    
+
+    /**
+     * Command the agent to rotate along its own axis.
+     */
     public void rotate(){
         synchronized (commandQueue) {
         commandQueue.put("rotate", "");
         }
     }
-    
+
+    /**
+     * Command the agent to stop its movement.
+     */
     public void stop(){
         synchronized (commandQueue) {
         commandQueue.put("stop", "");
         }
     }
-    
+
+    /**
+     * Command to insert an object inside the agent Bag
+     *
+     * @param thing The object instance of the thing to be collected.
+     *
+     * @see Bag
+     */
     public void sackIt(Thing thing){
         synchronized (commandQueue) {
             commandQueue.put("sackIt", thing);
         }
     }
 
+    /**
+     * Command to insert an object inside the agent Bag
+     *
+     * @param thingId The ID of the thing to be collected.
+     *
+     * @see Bag
+     */
     public void sackIt(int thingId){
         synchronized (commandQueue){
             commandQueue.put("sackIt", thingId);
         }
     }
-    
+
+    /**
+     * Command to deliver the required jewels of a leaflet. The jewels are removed
+     * form agent's bag and the leaflet payment is added to agent's score.
+     *
+     * @param leafletId The leaflet ID to be delivered.
+     *
+     * @see Leaflet
+     */
     public void deliver(int leafletId){
         synchronized (commandQueue) {
             System.out.println(String.format("Deliver leaflet %d", leafletId));
@@ -333,7 +385,11 @@ public class Agent extends Identifiable {
     public float getPitch(){
         return ori.get(2);
     }
-    
+
+    /**
+     *
+     * @return A list containing two float values. First is the x coordinate and second the y coordinate of agent's position
+     */
     public List<Float> getPosition(){
         return pos;
     }

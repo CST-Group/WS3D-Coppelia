@@ -19,6 +19,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
+ * Models all types of static objects in the environment.
+ *
+ * @see ThingsType
  *
  * @author bruno
  */
@@ -53,7 +56,7 @@ public class Thing extends Identifiable {
 
     }
 
-    public void init(){
+    private void init(){
 
         try {
             List<Float> size;
