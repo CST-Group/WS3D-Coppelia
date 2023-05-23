@@ -418,4 +418,12 @@ public class Agent extends Identifiable {
             leaflets[i].updateProgress(bag);
         }
     }
+
+    public List<Float> getRelativePosition(List<Float> targetPos){
+        return Arrays.asList(
+                targetPos.get(0) - pos.get(0),
+                targetPos.get(1) - pos.get(1),
+                targetPos.get(1) - pos.get(2)
+        );
+    }
 }
