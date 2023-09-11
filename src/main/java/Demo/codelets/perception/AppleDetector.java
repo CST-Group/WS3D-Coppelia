@@ -19,6 +19,7 @@
 
 package Demo.codelets.perception;
 
+import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -59,22 +60,25 @@ public class AppleDetector extends Codelet {
             List<Thing> known;
             synchronized (visionMO) {
                //vision = Collections.synchronizedList((List<Thing>) visionMO.getI());
-               vision = new CopyOnWriteArrayList((List<Thing>) visionMO.getI());    
+               vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
                known = Collections.synchronizedList((List<Thing>) knownApplesMO.getI());
                //known = new CopyOnWriteArrayList((List<Thing>) knownApplesMO.getI());    
                synchronized(vision) {
-                 for (Thing t : vision) {
-                     if(t.isFood()){
-                        boolean found = false;
-                        synchronized(known) {
-                           CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
-                           for (Thing e : myknown)
-                              if (Objects.equals(t, e)) {
-                                found = true;
-                                break;
-                              }
-                           if (found == false) known.add(t);
-                        }
+                 for (Identifiable obj : vision) {
+                     if (obj instanceof Thing) {
+                         Thing t = (Thing) obj;
+                         if (t.isFood()) {
+                             boolean found = false;
+                             synchronized (known) {
+                                 CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
+                                 for (Thing e : myknown)
+                                     if (Objects.equals(t, e)) {
+                                         found = true;
+                                         break;
+                                     }
+                                 if (found == false) known.add(t);
+                             }
+                         }
                      }
                
                  }

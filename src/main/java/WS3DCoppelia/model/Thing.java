@@ -5,14 +5,12 @@
 package WS3DCoppelia.model;
 
 import WS3DCoppelia.util.Constants;
-import static WS3DCoppelia.util.Constants.RED_COLOR;
 import static WS3DCoppelia.util.Constants.THING_SIZE;
 import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +66,7 @@ public class Thing extends Identifiable {
 
             Long floorHandle =  sim.getObject("/Floor");
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-            thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, category.color());
+            thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, category.color().rgb());
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -165,7 +163,7 @@ public class Thing extends Identifiable {
     }
 
     public List<Float> getColor(){
-        return category.color();
+        return category.color().rgb();
     }
 
     public int getShape(){

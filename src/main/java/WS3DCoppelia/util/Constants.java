@@ -17,17 +17,67 @@ public class Constants {
     public static final List<Float> THING_SIZE = Arrays.asList((float) 0.1, (float) 0.1, (float) 0.1);
     public static final float BRICK_HEIGTH = (float) 0.5;
     
-    public static final List<Float> RED_COLOR = Arrays.asList((float) 0.95, (float) 0.25, (float) 0.25);
-    public static final List<Float> GREEN_COLOR = Arrays.asList((float) 0.25, (float) 0.95, (float) 0.25);
-    public static final List<Float> BLUE_COLOR = Arrays.asList((float) 0.25, (float) 0.25, (float) 0.95);
-    public static final List<Float> YELLOW_COLOR = Arrays.asList((float) 0.95, (float) 0.95, (float) 0.25);
-    public static final List<Float> MAGENTA_COLOR = Arrays.asList((float) 0.95, (float) 0.25, (float) 0.95);
-    public static final List<Float> WHITE_COLOR = Arrays.asList((float) 0.95, (float) 0.95, (float) 0.95);
-    public static final List<Float> ORANGE_COLOR = Arrays.asList((float) 0.95, (float) 0.65, (float) 0.25);
+    public enum Color {
+        RED(Arrays.asList((float) 0.95, (float) 0.25, (float) 0.25)),
+        GREEN(Arrays.asList((float) 0.25, (float) 0.95, (float) 0.25)),
+        BLUE(Arrays.asList((float) 0.25, (float) 0.25, (float) 0.95)),
+        YELLOW(Arrays.asList((float) 0.95, (float) 0.95, (float) 0.25)),
+        MAGENTA(Arrays.asList((float) 0.95, (float) 0.25, (float) 0.95)),
+        WHITE(Arrays.asList((float) 0.95, (float) 0.95, (float) 0.95)),
+        ORANGE(Arrays.asList((float) 0.95, (float) 0.65, (float) 0.25)),
+        AGENT_YELLOW(Arrays.asList((float) 1, (float) 0.8, (float) 0.25)),
+        AGENT_GREEN(Arrays.asList((float) 0.55, (float) 0.8, (float) 0.15)),
+        AGENT_MAGENTA(Arrays.asList((float) 0.4, (float) 0.3, (float) 0.57)),
+        AGENT_RED(Arrays.asList((float) 0.98, (float) 0.25, (float) 0.27));
+
+        private final List<Float> rgb;
+        private final List<Float> hls;
+        Color(List<Float> rgb){
+            this.rgb = rgb;
+            //Code from https://github.com/tips4java/tips4java
+            float r = rgb.get(0);
+            float g = rgb.get(1);
+            float b = rgb.get(2);
+
+            //	Minimum and Maximum RGB values are used in the HSL calculations
+            float min = Math.min(r, Math.min(g, b));
+            float max = Math.max(r, Math.max(g, b));
+
+            //  Calculate the Hue
+            float h = 0;
+
+            if (max == min)
+                h = 0;
+            else if (max == r)
+                h = ((60 * (g - b) / (max - min)) + 360) % 360;
+            else if (max == g)
+                h = (60 * (b - r) / (max - min)) + 120;
+            else if (max == b)
+                h = (60 * (r - g) / (max - min)) + 240;
+
+            //  Calculate the Luminance
+            float l = (max + min) / 2;
+
+            //  Calculate the Saturation
+            float s = 0;
+
+            if (max == min)
+                s = 0;
+            else if (l <= .5f)
+                s = (max - min) / (max + min);
+            else
+                s = (max - min) / (2 - max - min);
+
+            hls = Arrays.asList(h/360, l, s);
+        }
+        public List<Float> rgb() { return rgb;}
+        public List<Float> hls() { return hls;}
+    }
     
     public static String BASE_SCRIPT = "#python\n"
             + "\n"
             + "from math import sqrt, floor\n"
+            + "import colorsys\n"
             + "\n"
             + "lin_vel = 0.02 # m/s\n"
             + "ang_vel = 0.02  # rad/s\n"
@@ -74,11 +124,12 @@ public class Constants {
             + "    # do some clean-up here\n"
             + "    pass\n"
             + "\n"
-            + "def status(score, leaflet_table):\n"
+            + "def status(score, leaflet_table, baseColor):\n"
             + "    #agent_handle = sim.getObjectFromUid(agent_uid)\n"
             + "    pos = sim.getObjectPosition(agent_handle, sim.handle_world)\n"
             + "    ori = sim.getObjectOrientation(agent_handle, sim.handle_world)\n"
             + "    fuel = sim.getFloatSignal(fuel_id)\n"
+            + "    update_color(baseColor, fuel)\n"
             + "    visionHandle = sim.getObjectChild(agent_handle, 1)\n"
             + "    list = sim.readVisionSensor(visionHandle)[1]\n"
             + "    list = [floor(k) for k in list]\n"
@@ -91,8 +142,15 @@ public class Constants {
             + "            simUI.setItem(ui, 200, j, i, str(leaflet_table[i][j]))\n"
             + "    \n"
             + "    \n"
-            + "    \n"
             + "    return pos, ori, fuel, list\n"
+            + "    \n"
+            + "def update_color(baseColor, fuel):\n"
+            + "    updateColor = baseColor\n"
+            + "    updateColor[1] = baseColor[1] * fuel/1000.0\n"
+            + "    updateColor = list(colorsys.hls_to_rgb(*updateColor))\n"
+            + "    renderHandle = sim.getObjectsInTree(agent_handle, sim.handle_all, 1)\n"
+            + "    sim.setObjectColor(renderHandle[0], 0, sim.colorcomponent_ambient_diffuse, updateColor) \n"
+            + "    \n"
             + "def move_agent(targetPos, targetOri):\n"
             + "    sim.setObjectOrientation(target_handle, sim.handle_world, targetOri)\n"
             + "    #sim.setObjectOrientation(agent_handle, sim.handle_world, targetOri)\n"
@@ -155,7 +213,7 @@ public class Constants {
      */
     public interface ThingsType {
         public int shape();
-        public List<Float> color();
+        public Color color();
         public String typeName();
     }
 
@@ -164,18 +222,18 @@ public class Constants {
         /**
          * Perishable food. Red sphere.
          */
-        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, RED_COLOR, 300, "P_Food"),
+        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.RED, 300, "P_Food"),
         /**
          * Non-perishable food. Brown sphere.
          */
-        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, ORANGE_COLOR, 150, "NP_Food");
+        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.ORANGE, 150, "NP_Food");
         
         private final int shape;
-        private final List<Float> color;
+        private final Color color;
         private final String type_name;
         private final float energy;
         
-        FoodTypes(int shape, List<Float> color, float energy, String name){
+        FoodTypes(int shape, Color color, float energy, String name){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
@@ -185,25 +243,25 @@ public class Constants {
         @Override
         public int shape() { return shape; }
         @Override
-        public List<Float> color() { return color; }
+        public Color color() { return color; }
         @Override
         public String typeName() { return type_name; }
         public float energy() { return energy; }
     }
     
     public enum JewelTypes implements ThingsType{
-        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, RED_COLOR, "Red_Jewel"),
-        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, GREEN_COLOR, "Green_Jewel"),
-        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, BLUE_COLOR, "Blue_Jewel"),
-        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, YELLOW_COLOR, "Yellow_Jewel"),
-        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, MAGENTA_COLOR, "Magenta_Jewel"),
-        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, WHITE_COLOR, "White_Jewel");
+        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.RED, "Red_Jewel"),
+        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.GREEN, "Green_Jewel"),
+        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.BLUE, "Blue_Jewel"),
+        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.YELLOW, "Yellow_Jewel"),
+        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.MAGENTA, "Magenta_Jewel"),
+        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.WHITE, "White_Jewel");
         
         private final int shape;
-        private final List<Float> color;
+        private final Color color;
         private final String type_name;
         
-        JewelTypes(int shape, List<Float> color, String name){
+        JewelTypes(int shape, Color color, String name){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
@@ -212,24 +270,24 @@ public class Constants {
         @Override
         public int shape() { return shape; }
         @Override
-        public List<Float> color() { return color; }
+        public Color color() { return color; }
         @Override
         public String typeName() { return type_name; }
     }
     
     public enum BrickTypes implements ThingsType{
-        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, RED_COLOR, "Red_Brick"),
-        BLUE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, BLUE_COLOR, "Blue_Brick"),
-        GREEN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, GREEN_COLOR, "Green_Brick"),
-        YELLOW_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, YELLOW_COLOR, "Yellow_Brick"),
-        MAGENTA_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, MAGENTA_COLOR, "Magenta_Brick"),
-        WHITE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, WHITE_COLOR, "White_Brick");
+        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.RED, "Red_Brick"),
+        BLUE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BLUE, "Blue_Brick"),
+        GREEN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREEN, "Green_Brick"),
+        YELLOW_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.YELLOW, "Yellow_Brick"),
+        MAGENTA_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.MAGENTA, "Magenta_Brick"),
+        WHITE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.WHITE, "White_Brick");
         
         private final int shape;
-        private final List<Float> color;
+        private final Color color;
         private final String type_name;
         
-        BrickTypes(int shape, List<Float> color, String name){
+        BrickTypes(int shape, Color color, String name){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
@@ -238,7 +296,7 @@ public class Constants {
         @Override
         public int shape() { return shape; }
         @Override
-        public List<Float> color() { return color; }
+        public Color color() { return color; }
         @Override
         public String typeName() { return type_name; }
     }

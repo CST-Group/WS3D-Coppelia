@@ -5,8 +5,7 @@
 package WS3DCoppelia;
 
 import WS3DCoppelia.model.*;
-import WS3DCoppelia.util.Constants.BrickTypes;
-import WS3DCoppelia.util.Constants.ThingsType;
+import WS3DCoppelia.util.Constants.*;
 import WS3DCoppelia.util.NativeUtils;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.*;
@@ -106,7 +105,7 @@ public class WS3DCoppelia {
         }
         synchronized(inWorldAgents){
             for(Agent agt : inWorldAgents){
-                agt.run(inWorldThings, worldScript);
+                agt.run(inWorldThings, inWorldAgents, worldScript);
             }
         }
     }
@@ -184,6 +183,27 @@ public class WS3DCoppelia {
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
         
         Agent newAgent = new Agent(sim, x, y, width, heigth);
+        synchronized(inWorldAgents){
+            inWorldAgents.add(newAgent);
+        }
+        return newAgent;
+    }
+
+    /**
+     * Insert an agent in the simulation.
+     *
+     * @param x The x coordinate to initialize the agent.
+     * @param y The y coordinate to initialize the agent.
+     * @return The agent object to access its information and action execution.
+     *
+     * @see Agent
+     */
+    public Agent createAgent(float x, float y, Color color){
+        //Ensures limit
+        x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
+        y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
+
+        Agent newAgent = new Agent(sim, x, y, width, heigth, color);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
         }

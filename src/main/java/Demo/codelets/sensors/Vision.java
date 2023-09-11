@@ -21,6 +21,7 @@ package Demo.codelets.sensors;
 
 import Demo.Environment;
 import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -55,7 +56,7 @@ public class Vision extends Codelet{
 	public void proc() {
              
              synchronized (visionMO) {
-                List<Thing> lt = creature.getThingsInVision();
+                List<Identifiable> lt = creature.getThingsInVision();
                 visionMO.setI(lt);
              }
 	}//end proc()

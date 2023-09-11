@@ -5,10 +5,10 @@
 package WS3DCoppelia.model;
 
 import WS3DCoppelia.util.Constants;
-import WS3DCoppelia.util.Constants.JewelTypes;
+import WS3DCoppelia.util.Constants.*;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Class that encapsulate the agent information and its available actions.
@@ -34,10 +33,11 @@ public class Agent extends Identifiable {
     private List<Float> pos;
     private List<Float> ori;
     private float fuel;    
-    private List<Thing> thingsInVision =  Collections.synchronizedList(new ArrayList());
+    private List<Identifiable> thingsInVision =  Collections.synchronizedList(new ArrayList());
     private Bag bag = new Bag();
     private int score = 0;
     private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
+    private Color color;
     
     private boolean initialized = false;
     private double fovAngle = 0.5;
@@ -57,27 +57,40 @@ public class Agent extends Identifiable {
      * @param heigth Environment height for determining movement limits.
      */
     public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth){
-        sim = sim_;  
+        color = Color.AGENT_GREEN;
+        sim = sim_;
         pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
         ori = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
         xLimit = width;
         yLimit = heigth;
-        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
             leaflets[i] = new Leaflet();
         }
     }
-    
+
+    public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth, Color color_) {
+        color = color_;
+        sim = sim_;
+        pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
+        ori = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
+        xLimit = width;
+        yLimit = heigth;
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
+            leaflets[i] = new Leaflet();
+        }
+    }
+
     private void init(){
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
             
-            agentScript = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT);
+            agentScript = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb());
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    private void updateState(List<Thing> inWorldThings){
+    private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents){
         List<Long> objectsInVision = new ArrayList<Long>();
         try {             
             List<List<Integer>> leafletInfo = new ArrayList<>();
@@ -96,20 +109,27 @@ public class Agent extends Identifiable {
                 lInfo.add(l.getPayment());
                 leafletInfo.add(lInfo);
             }
-            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, leafletInfo);
+            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, leafletInfo, color.hls());
             pos = (List<Float>) response.get(0);
             ori = (List<Float>) response.get(1);
             fuel = (float) response.get(2);
             objectsInVision = (List<Long>) response.get(3);
             
-            List<Thing> thingsSeen = new ArrayList<>();
+            List<Identifiable> thingsSeen = new ArrayList<>();
             synchronized (inWorldThings) {
                 for (Thing thing : inWorldThings){
                     if(thing.isIncluded(objectsInVision)){
                         thingsSeen.add(thing);
                     }
                 }
-            }        
+            }
+            synchronized (inWorldAgents) {
+                for (Agent agent : inWorldAgents){
+                    if(agent.isIncluded(objectsInVision)){
+                        thingsSeen.add(agent);
+                    }
+                }
+            }
 
             synchronized (thingsInVision){
                 thingsInVision.clear();
@@ -179,13 +199,13 @@ public class Agent extends Identifiable {
         }
     }
     
-    public void run(List<Thing> inWorldThings, Long worldScript_){
+    public void run(List<Thing> inWorldThings, List<Agent> inWorldAgents, Long worldScript_){
         if (!initialized){
             worldScript = worldScript_;
             this.init();
             initialized = true;
         } else {
-            this.updateState(inWorldThings);
+            this.updateState(inWorldThings, inWorldAgents);
             this.execCommands(inWorldThings);
         }
     }
@@ -394,7 +414,7 @@ public class Agent extends Identifiable {
         return pos;
     }
     
-    public List<Thing> getThingsInVision(){
+    public List<Identifiable> getThingsInVision(){
         return thingsInVision;
     }
 
@@ -425,5 +445,9 @@ public class Agent extends Identifiable {
                 targetPos.get(1) - pos.get(1),
                 targetPos.get(1) - pos.get(2)
         );
+    }
+
+    public boolean isIncluded(List<Long> handleList){
+        return handleList.contains(agentHandle);
     }
 }
