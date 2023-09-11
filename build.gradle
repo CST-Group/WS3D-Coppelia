@@ -46,12 +46,8 @@ dependencies {
 
     implementation group: 'co.nstant.in', name: 'cbor', version:'0.9'
 
-<<<<<<< HEAD
    //implementation 'com.github.CST-Group:cst-desktop:1.0.4'
     implementation 'com.github.CST-Group:cst:1.3.0'
-=======
-   implementation 'com.github.CST-Group:cst-desktop:1.0.5'
->>>>>>> 803fe71b52c71006171e120cc9375f9a1fdc1c83
 
     implementation fileTree(dir: 'libs', include: '*.jar')
 }
