@@ -12,6 +12,7 @@ import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class Thing extends Identifiable {
     public float width = (float) 0.1, depth = (float) 0.1;
 
     private ThingsType category;
+    private List<Float> color = new ArrayList<>();
 
     private boolean initialized = false;
 
@@ -39,6 +41,10 @@ public class Thing extends Identifiable {
         sim = sim_;
         pos = Arrays.asList(new Float[]{x, y, (float) 0.05});
         category = category_;
+        List<Float> colorCat = category.color().rgb();
+        for (Float colorElem : colorCat){
+            color.add(Math.min(1f,Math.max(0f, colorElem + (new Random().nextFloat()-0.5f)*0.1f)));
+        }
 
     }
 
@@ -51,6 +57,10 @@ public class Thing extends Identifiable {
         else
             pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, (float) 0.05});
         category = category_;
+        List<Float> colorCat = category.color().rgb();
+        for (Float colorElem : colorCat){
+            color.add(Math.min(1f,Math.max(0f, colorElem + (new Random().nextFloat()-0.5f)*0.1f)));
+        }
 
     }
 
@@ -66,7 +76,7 @@ public class Thing extends Identifiable {
 
             Long floorHandle =  sim.getObject("/Floor");
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-            thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, category.color().rgb());
+            thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -163,7 +173,7 @@ public class Thing extends Identifiable {
     }
 
     public List<Float> getColor(){
-        return category.color().rgb();
+        return color;
     }
 
     public int getShape(){

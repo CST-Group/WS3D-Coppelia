@@ -38,6 +38,7 @@ public class Agent extends Identifiable {
     private int score = 0;
     private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
     private Color color;
+    private List<Float> currColor;
     
     private boolean initialized = false;
     private double fovAngle = 0.5;
@@ -58,6 +59,7 @@ public class Agent extends Identifiable {
      */
     public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth){
         color = Color.AGENT_GREEN;
+        currColor = color.rgb();
         sim = sim_;
         pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
         ori = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
@@ -70,6 +72,7 @@ public class Agent extends Identifiable {
 
     public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth, Color color_) {
         color = color_;
+        currColor = color.rgb();
         sim = sim_;
         pos = Arrays.asList(new Float[]{x, y, (float) 0.16});
         ori = Arrays.asList(new Float[]{(float) 0, (float) 0, (float) 0});
@@ -114,7 +117,8 @@ public class Agent extends Identifiable {
             ori = (List<Float>) response.get(1);
             fuel = (float) response.get(2);
             objectsInVision = (List<Long>) response.get(3);
-            
+            currColor = (List<Float>) response.get(4);
+
             List<Identifiable> thingsSeen = new ArrayList<>();
             synchronized (inWorldThings) {
                 for (Thing thing : inWorldThings){
@@ -416,6 +420,15 @@ public class Agent extends Identifiable {
     
     public List<Identifiable> getThingsInVision(){
         return thingsInVision;
+    }
+
+    public List<Float> getColor(){
+        return currColor;
+    }
+
+    public String getColorName(){
+        String[] split = color.name().split("_");
+        return split.length > 1 ? split[1] : color.name();
     }
 
     public boolean isInOccupancyArea(float x, float y) {
