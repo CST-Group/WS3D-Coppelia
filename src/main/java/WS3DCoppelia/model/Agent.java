@@ -29,35 +29,34 @@ public class Agent extends Identifiable {
     private Long agentHandle;
     private Long worldScript;
     private Long agentScript;
-    
+
     private List<Float> pos;
     private List<Float> ori;
-    private float fuel;    
-    private List<Identifiable> thingsInVision =  Collections.synchronizedList(new ArrayList());
+    private float fuel;
+    private List<Identifiable> thingsInVision = Collections.synchronizedList(new ArrayList());
     private Bag bag = new Bag();
     private int score = 0;
     private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
     private Color color;
     private List<Float> currColor;
-    
+
     private boolean initialized = false;
     private double fovAngle = 0.5;
     private int maxFov = 100;
     private boolean rotate = false;
     private final float xLimit;
     private final float yLimit;
-    
+
     private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
 
     /**
-     *
-     * @param sim_ The CoppeliaSim api connector.
-     * @param x Initial x coordinate.
-     * @param y Initial y coordinate.
-     * @param width Environment width for determining movement limits.
+     * @param sim_   The CoppeliaSim api connector.
+     * @param x      Initial x coordinate.
+     * @param y      Initial y coordinate.
+     * @param width  Environment width for determining movement limits.
      * @param heigth Environment height for determining movement limits.
      */
-    public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth){
+    public Agent(RemoteAPIObjects._sim sim_, float x, float y, float width, float heigth) {
         color = Color.AGENT_GREEN;
         currColor = color.rgb();
         sim = sim_;
@@ -83,32 +82,32 @@ public class Agent extends Identifiable {
         }
     }
 
-    private void init(){
+    private void init() {
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
-            
+
             agentScript = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb());
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents){
+
+    private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents) {
         List<Long> objectsInVision = new ArrayList<Long>();
-        try {             
+        try {
             List<List<Integer>> leafletInfo = new ArrayList<>();
             List<Integer> bagInfo = new ArrayList<>();
-            for (JewelTypes jewel : JewelTypes.values()){
+            for (JewelTypes jewel : JewelTypes.values()) {
                 bagInfo.add(bag.getTotalCountOf(jewel));
             }
             leafletInfo.add(bagInfo);
-            
-            for (Leaflet l : leaflets){
+
+            for (Leaflet l : leaflets) {
                 List<Integer> lInfo = new ArrayList<>();
-                for (JewelTypes jewel : JewelTypes.values()){
+                for (JewelTypes jewel : JewelTypes.values()) {
                     lInfo.add(l.getRequiredAmountOf(jewel));
                 }
-                lInfo.add(l.isDelivered() ? 1:0);
+                lInfo.add(l.isDelivered() ? 1 : 0);
                 lInfo.add(l.getPayment());
                 leafletInfo.add(lInfo);
             }
@@ -121,50 +120,51 @@ public class Agent extends Identifiable {
 
             List<Identifiable> thingsSeen = new ArrayList<>();
             synchronized (inWorldThings) {
-                for (Thing thing : inWorldThings){
-                    if(thing.isIncluded(objectsInVision)){
+                for (Thing thing : inWorldThings) {
+                    if (thing.isIncluded(objectsInVision)) {
                         thingsSeen.add(thing);
                     }
                 }
             }
             synchronized (inWorldAgents) {
-                for (Agent agent : inWorldAgents){
-                    if(agent.isIncluded(objectsInVision)){
-                        thingsSeen.add(agent);
-                    }
+                for (Agent agent : inWorldAgents) {
+                    if (agent.initialized)
+                        if (agent.isIncluded(objectsInVision)) {
+                            thingsSeen.add(agent);
+                        }
                 }
             }
 
-            synchronized (thingsInVision){
+            synchronized (thingsInVision) {
                 thingsInVision.clear();
                 thingsInVision.addAll(thingsSeen);
             }
-            
+
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
         }
-        
+
         if (rotate)
             execRotate();
-        
+
     }
-    
-    private void execCommands(List<Thing> inWorldThings){
-        synchronized (commandQueue){
+
+    private void execCommands(List<Thing> inWorldThings) {
+        synchronized (commandQueue) {
             List<String> executed = new ArrayList<>();
-            for(String command : commandQueue.keySet()){
+            for (String command : commandQueue.keySet()) {
                 executed.add(command);
                 Thing thing = null;
-                switch (command){
+                switch (command) {
                     case "move":
                         this.execMove((List<Float>) commandQueue.get(command));
                         break;
                     case "eat":
                         if (commandQueue.get(command) instanceof Integer)
                             thing = inWorldThings.stream()
-                                    .filter(e->e.checkId((int) commandQueue.get(command)))
+                                    .filter(e -> e.checkId((int) commandQueue.get(command)))
                                     .findFirst()
                                     .orElse(null);
                         else
@@ -180,7 +180,7 @@ public class Agent extends Identifiable {
                     case "sackIt":
                         if (commandQueue.get(command) instanceof Integer)
                             thing = inWorldThings.stream()
-                                    .filter(e->e.checkId((int) commandQueue.get(command)))
+                                    .filter(e -> e.checkId((int) commandQueue.get(command)))
                                     .findFirst()
                                     .orElse(null);
                         else
@@ -202,9 +202,9 @@ public class Agent extends Identifiable {
                 commandQueue.remove(c);
         }
     }
-    
-    public void run(List<Thing> inWorldThings, List<Agent> inWorldAgents, Long worldScript_){
-        if (!initialized){
+
+    public void run(List<Thing> inWorldThings, List<Agent> inWorldAgents, Long worldScript_) {
+        if (!initialized) {
             worldScript = worldScript_;
             this.init();
             initialized = true;
@@ -220,7 +220,7 @@ public class Agent extends Identifiable {
      * @param x The x coordinate of the destination.
      * @param y The y coordinate of the destination.
      */
-    public void moveTo(float x, float y){
+    public void moveTo(float x, float y) {
         synchronized (commandQueue) {
             commandQueue.put("move", Arrays.asList(new Float[]{x, y}));
         }
@@ -231,10 +231,10 @@ public class Agent extends Identifiable {
      *
      * @param thing The object instance of the food to be consumed.
      */
-    public void eatIt(Thing thing){
+    public void eatIt(Thing thing) {
         synchronized (commandQueue) {
-        if (thing.isFood())
-            commandQueue.put("eat", thing);
+            if (thing.isFood())
+                commandQueue.put("eat", thing);
         }
     }
 
@@ -243,8 +243,8 @@ public class Agent extends Identifiable {
      *
      * @param thingId The ID of the food to be consumed.
      */
-    public void eatIt(int thingId){
-        synchronized (commandQueue){
+    public void eatIt(int thingId) {
+        synchronized (commandQueue) {
             commandQueue.put("eat", thingId);
         }
     }
@@ -252,18 +252,18 @@ public class Agent extends Identifiable {
     /**
      * Command the agent to rotate along its own axis.
      */
-    public void rotate(){
+    public void rotate() {
         synchronized (commandQueue) {
-        commandQueue.put("rotate", "");
+            commandQueue.put("rotate", "");
         }
     }
 
     /**
      * Command the agent to stop its movement.
      */
-    public void stop(){
+    public void stop() {
         synchronized (commandQueue) {
-        commandQueue.put("stop", "");
+            commandQueue.put("stop", "");
         }
     }
 
@@ -271,10 +271,9 @@ public class Agent extends Identifiable {
      * Command to insert an object inside the agent Bag
      *
      * @param thing The object instance of the thing to be collected.
-     *
      * @see Bag
      */
-    public void sackIt(Thing thing){
+    public void sackIt(Thing thing) {
         synchronized (commandQueue) {
             commandQueue.put("sackIt", thing);
         }
@@ -284,11 +283,10 @@ public class Agent extends Identifiable {
      * Command to insert an object inside the agent Bag
      *
      * @param thingId The ID of the thing to be collected.
-     *
      * @see Bag
      */
-    public void sackIt(int thingId){
-        synchronized (commandQueue){
+    public void sackIt(int thingId) {
+        synchronized (commandQueue) {
             commandQueue.put("sackIt", thingId);
         }
     }
@@ -298,79 +296,78 @@ public class Agent extends Identifiable {
      * form agent's bag and the leaflet payment is added to agent's score.
      *
      * @param leafletId The leaflet ID to be delivered.
-     *
      * @see Leaflet
      */
-    public void deliver(int leafletId){
+    public void deliver(int leafletId) {
         synchronized (commandQueue) {
             System.out.println(String.format("Deliver leaflet %d", leafletId));
             commandQueue.put("deliver", leafletId);
         }
     }
-    
-    private void execMove(List<Float> params){
+
+    private void execMove(List<Float> params) {
         try {
             float goalX = params.get(0);
             float goalY = params.get(1);
-            goalX = (goalX > xLimit) ? xLimit : (goalX < 0.1f ? 0.1f: goalX );
-            goalY = (goalY > yLimit) ? yLimit : (goalY < 0.1f ? 0.1f: goalY );
+            goalX = (goalX > xLimit) ? xLimit : (goalX < 0.1f ? 0.1f : goalX);
+            goalY = (goalY > yLimit) ? yLimit : (goalY < 0.1f ? 0.1f : goalY);
             double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
-            
+
             List<Float> targetPos = Arrays.asList(new Float[]{goalX, goalY, (float) 0});
             List<Float> targetOri = new ArrayList<>(ori);
             targetOri.set(2, (float) goalPitch);
-            
+
             sim.callScriptFunction("move_agent", agentScript, targetPos, targetOri);
-            
+
             rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ArrayIndexOutOfBoundsException ex){
+        } catch (ArrayIndexOutOfBoundsException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Move command return");
         }
     }
-    
-    private void execEatIt(Thing food){
+
+    private void execEatIt(Thing food) {
         try {
             food.remove();
             sim.callScriptFunction("increase_fuel", agentScript, food.energy());
-            
+
             rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ArrayIndexOutOfBoundsException ex){
+        } catch (ArrayIndexOutOfBoundsException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Eat command return");
         }
     }
-    
-    private void execRotate(){
-        try {            
+
+    private void execRotate() {
+        try {
             sim.callScriptFunction("rotate_agent", agentScript);
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ArrayIndexOutOfBoundsException ex){
+        } catch (ArrayIndexOutOfBoundsException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Rotate command return");
         }
 
     }
-    
-    private void execStop(){
+
+    private void execStop() {
         try {
             sim.callScriptFunction("stop_agent", agentScript);
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ArrayIndexOutOfBoundsException ex){
+        } catch (ArrayIndexOutOfBoundsException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Stop command return");
         }
 
     }
-    
-    private void execSackIt(Thing thing){
+
+    private void execSackIt(Thing thing) {
         try {
-            if (!thing.removed){
+            if (!thing.removed) {
                 thing.remove();
                 bag.insertItem(thing.thingType(), 1);
-                for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+                for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
                     leaflets[i].updateProgress(bag);
                 }
             }
@@ -378,81 +375,80 @@ public class Agent extends Identifiable {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    private void execDeliver(int leafletId){
+
+    private void execDeliver(int leafletId) {
         boolean deliverable = false;
 
         int pos = 0;
-        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
-            if(leaflets[i].checkId(leafletId) && leaflets[i].isCompleted()){
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
+            if (leaflets[i].checkId(leafletId) && leaflets[i].isCompleted()) {
                 pos = i;
                 deliverable = true;
             }
         }
 
-        if (deliverable){
+        if (deliverable) {
             System.out.println("Delivering");
             score += leaflets[pos].getPayment();
             leaflets[pos].setDelivered(true);
-            for(Entry<Constants.JewelTypes, Integer> requirement : leaflets[pos].getRequirements().entrySet()){
+            for (Entry<Constants.JewelTypes, Integer> requirement : leaflets[pos].getRequirements().entrySet()) {
                 bag.removeItem(requirement.getKey(), requirement.getValue());
             }
-        } else{
+        } else {
             System.out.println("Not completed");
         }
     }
-    
-    public float getFuel(){
+
+    public float getFuel() {
         return fuel;
     }
-    
-    public float getPitch(){
+
+    public float getPitch() {
         return ori.get(2);
     }
 
     /**
-     *
      * @return A list containing two float values. First is the x coordinate and second the y coordinate of agent's position
      */
-    public List<Float> getPosition(){
+    public List<Float> getPosition() {
         return pos;
     }
-    
-    public List<Identifiable> getThingsInVision(){
+
+    public List<Identifiable> getThingsInVision() {
         return thingsInVision;
     }
 
-    public List<Float> getColor(){
+    public List<Float> getColor() {
         return currColor;
     }
 
-    public String getColorName(){
+    public String getColorName() {
         String[] split = color.name().split("_");
         return split.length > 1 ? split[1] : color.name();
     }
 
     public boolean isInOccupancyArea(float x, float y) {
-        return Math.hypot( Math.abs(pos.get(0) - x),
+        return Math.hypot(Math.abs(pos.get(0) - x),
                 Math.abs(pos.get(1) - y))
                 <= Constants.AGENT_OCCUPANCY_RADIUS;
     }
-    
-    public Bag getBag(){
+
+    public Bag getBag() {
         return bag;
     }
-    
-    public Leaflet[] getLeaflets(){
+
+    public Leaflet[] getLeaflets() {
         return leaflets;
     }
-    
-    public void generateNewLeaflets(){
-        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++){
+
+    public void generateNewLeaflets() {
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
             leaflets[i] = new Leaflet();
             leaflets[i].updateProgress(bag);
         }
     }
 
-    public List<Float> getRelativePosition(List<Float> targetPos){
+    public List<Float> getRelativePosition(List<Float> targetPos) {
         return Arrays.asList(
                 targetPos.get(0) - pos.get(0),
                 targetPos.get(1) - pos.get(1),
@@ -460,7 +456,10 @@ public class Agent extends Identifiable {
         );
     }
 
-    public boolean isIncluded(List<Long> handleList){
-        return handleList.contains(agentHandle);
+    public boolean isIncluded(List<Long> handleList) {
+        //The visible object detected by the camera is the sub-object
+        //with the agent mesh, not the invisible one containing the
+        //agent's script, thus the +1
+        return handleList.contains(agentHandle + 1L);
     }
 }
