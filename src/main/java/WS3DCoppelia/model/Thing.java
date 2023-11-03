@@ -206,10 +206,10 @@ public class Thing extends Identifiable {
     }
 
     public float getWidth() {
-        return width;
+        return width * scale;
     }
 
     public float getDepth() {
-        return depth;
+        return depth * scale;
     }
 }
