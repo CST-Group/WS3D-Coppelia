@@ -31,6 +31,7 @@ public class Thing extends Identifiable {
     public boolean removed = false;
 
     public float width = (float) 0.1, depth = (float) 0.1;
+    private long scale = (long) 1.0;
 
     private ThingsType category;
     private List<Float> color = new ArrayList<>();
@@ -104,10 +105,23 @@ public class Thing extends Identifiable {
         }
     }
 
+    private void updateState(){
+        Long floorHandle = null;
+        try {
+            floorHandle = sim.getObject("/Floor");
+            Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+            this.scale = (Long) sim.callScriptFunction("get_thing_size", script, this.thingHandle);
+        } catch (CborException ex) {
+            Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public void run(){
         if (!initialized){
             this.init();
             initialized = true;
+        } else {
+            this.updateState();
         }
     }
 
@@ -132,7 +146,10 @@ public class Thing extends Identifiable {
     }
 
     public void remove() throws CborException{
-        sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
+        //sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
+        Long floorHandle =  sim.getObject("/Floor");
+        Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+        sim.callScriptFunction("remove_thing", script, this.thingHandle);
         removed = true;
     }
 
@@ -169,7 +186,7 @@ public class Thing extends Identifiable {
         } else {
             size = THING_SIZE;
         }
-        return size;
+        return size.stream().map(e -> e*scale).collect(Collectors.toList());
     }
 
     public List<Float> getColor(){
