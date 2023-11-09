@@ -28,10 +28,11 @@ public class Thing extends Identifiable {
     private RemoteAPIObjects._sim sim;
     private Long thingHandle;
     private List<Float> pos;
+    public boolean removing = false;
     public boolean removed = false;
 
     public float width = (float) 0.1, depth = (float) 0.1;
-    private long scale = (long) 1.0;
+    private Float scale = 1.0F;
 
     private ThingsType category;
     private List<Float> color = new ArrayList<>();
@@ -106,13 +107,17 @@ public class Thing extends Identifiable {
     }
 
     private void updateState(){
-        Long floorHandle = null;
-        try {
-            floorHandle = sim.getObject("/Floor");
-            Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-            this.scale = (Long) sim.callScriptFunction("get_thing_size", script, this.thingHandle);
-        } catch (CborException ex) {
-            Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
+        if (removing) {
+            try {
+                if (sim.isHandle(this.thingHandle))
+                    this.scale = sim.getObjectSizeFactor(this.thingHandle);
+                else
+                    removed = true;
+            } catch (CborException ex) {
+                Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (RuntimeException ex){
+                removed = true;
+            }
         }
     }
 
@@ -150,7 +155,7 @@ public class Thing extends Identifiable {
         Long floorHandle =  sim.getObject("/Floor");
         Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
         sim.callScriptFunction("remove_thing", script, this.thingHandle);
-        removed = true;
+        removing = true;
     }
 
     public List<Float> getRelativePos(List<Float> source_pos) {
