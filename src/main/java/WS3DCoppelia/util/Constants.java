@@ -25,7 +25,7 @@ public class Constants {
         MAGENTA(Arrays.asList((float) 0.95, (float) 0.25, (float) 0.95)),
         WHITE(Arrays.asList((float) 0.95, (float) 0.95, (float) 0.95)),
         ORANGE(Arrays.asList((float) 0.95, (float) 0.65, (float) 0.25)),
-        GREY(Arrays.asList((float) 0.8, (float) 0.8, (float) 0.8)),
+        GREY(Arrays.asList((float) 0.5, (float) 0.5, (float) 0.5)),
         BROWN(Arrays.asList((float) 0.6, (float) 0.4, (float) 0.25)),
         AGENT_YELLOW(Arrays.asList((float) 1, (float) 0.8, (float) 0.25)),
         AGENT_GREEN(Arrays.asList((float) 0.55, (float) 0.8, (float) 0.15)),
