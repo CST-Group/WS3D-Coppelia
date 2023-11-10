@@ -25,6 +25,8 @@ public class Constants {
         MAGENTA(Arrays.asList((float) 0.95, (float) 0.25, (float) 0.95)),
         WHITE(Arrays.asList((float) 0.95, (float) 0.95, (float) 0.95)),
         ORANGE(Arrays.asList((float) 0.95, (float) 0.65, (float) 0.25)),
+        GREY(Arrays.asList((float) 0.8, (float) 0.8, (float) 0.8)),
+        BROWN(Arrays.asList((float) 0.6, (float) 0.4, (float) 0.25)),
         AGENT_YELLOW(Arrays.asList((float) 1, (float) 0.8, (float) 0.25)),
         AGENT_GREEN(Arrays.asList((float) 0.55, (float) 0.8, (float) 0.15)),
         AGENT_MAGENTA(Arrays.asList((float) 0.4, (float) 0.3, (float) 0.57)),
@@ -282,8 +284,11 @@ public class Constants {
         GREEN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREEN, "Green_Brick"),
         YELLOW_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.YELLOW, "Yellow_Brick"),
         MAGENTA_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.MAGENTA, "Magenta_Brick"),
-        WHITE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.WHITE, "White_Brick");
-        
+        WHITE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.WHITE, "White_Brick"),
+        ORANGE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.ORANGE, "Orange_Brick"),
+        GREY_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREY, "Grey_Brick"),
+        BROWN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BROWN, "Brown_Brick");
+
         private final int shape;
         private final Color color;
         private final String type_name;

@@ -48,6 +48,7 @@ public class Agent extends Identifiable {
     private final float yLimit;
 
     private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
+    private boolean updatable = true;
 
     /**
      * @param sim_   The CoppeliaSim api connector.
@@ -209,7 +210,8 @@ public class Agent extends Identifiable {
             this.init();
             initialized = true;
         } else {
-            this.updateState(inWorldThings, inWorldAgents);
+            if (updatable)
+                this.updateState(inWorldThings, inWorldAgents);
             this.execCommands(inWorldThings);
         }
     }
@@ -461,5 +463,9 @@ public class Agent extends Identifiable {
         //with the agent mesh, not the invisible one containing the
         //agent's script, thus the +1
         return handleList.contains(agentHandle + 1L);
+    }
+
+    public void setUpdatable(boolean updatable) {
+        this.updatable = updatable;
     }
 }
