@@ -48,7 +48,7 @@ public class Agent extends Identifiable {
     private final float yLimit;
 
     private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
-    private boolean updatable = true;
+    private boolean isNPC = false;
 
     /**
      * @param sim_   The CoppeliaSim api connector.
@@ -87,7 +87,7 @@ public class Agent extends Identifiable {
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
 
-            agentScript = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb());
+            agentScript = (Long) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb(), isNPC?"True":"False");
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -210,8 +210,7 @@ public class Agent extends Identifiable {
             this.init();
             initialized = true;
         } else {
-            if (updatable)
-                this.updateState(inWorldThings, inWorldAgents);
+            this.updateState(inWorldThings, inWorldAgents);
             this.execCommands(inWorldThings);
         }
     }
@@ -465,7 +464,7 @@ public class Agent extends Identifiable {
         return handleList.contains(agentHandle + 1L);
     }
 
-    public void setUpdatable(boolean updatable) {
-        this.updatable = updatable;
+    public void setNPC(boolean NPC) {
+        this.isNPC = NPC;
     }
 }

@@ -210,6 +210,19 @@ public class WS3DCoppelia {
         return newAgent;
     }
 
+    public Agent createNPCAgent(float x, float y, Color color){
+        //Ensures limit
+        x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
+        y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
+
+        Agent newAgent = new Agent(sim, x, y, width, heigth, color);
+        newAgent.setNPC(true);
+        synchronized(inWorldAgents){
+            inWorldAgents.add(newAgent);
+        }
+        return newAgent;
+    }
+
     /**
      * Insert an object in the environment.
      *
