@@ -136,7 +136,7 @@ public class Constants {
             + "    ori = sim.getObjectOrientation(agent_handle, sim.handle_world)\n"
             + "    fuel = 1000.1\n"
             + "    list = []\n"
-            + "    new_color = base_color\n"
+            + "    new_color = baseColor\n"
             + "    if not is_npc:\n"
             + "        fuel = sim.getFloatSignal(fuel_id)\n"
             + "        new_color = update_color(baseColor, fuel)\n"

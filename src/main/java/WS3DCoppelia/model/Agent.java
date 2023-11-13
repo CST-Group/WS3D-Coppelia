@@ -98,6 +98,11 @@ public class Agent extends Identifiable {
     private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents) {
         if (remove) {
             try {
+                long childHandle = sim.getObjectChild(agentHandle, 0);
+                while (childHandle != -1){
+                    sim.removeObjects(Arrays.asList(new Long[]{childHandle}));
+                    childHandle = sim.getObjectChild(agentHandle, 0);
+                }
                 sim.removeObjects(Arrays.asList(new Long[]{agentHandle}));
                 removed = true;
             } catch (CborException ex) {
