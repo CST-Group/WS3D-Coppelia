@@ -49,6 +49,8 @@ public class Agent extends Identifiable {
 
     private Map<String, Object> commandQueue = Collections.synchronizedMap(new LinkedHashMap());
     private boolean isNPC = false;
+    private boolean remove = false;
+    public boolean removed = false;
 
     /**
      * @param sim_   The CoppeliaSim api connector.
@@ -94,61 +96,70 @@ public class Agent extends Identifiable {
     }
 
     private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents) {
-        List<Long> objectsInVision = new ArrayList<Long>();
-        try {
-            List<List<Integer>> leafletInfo = new ArrayList<>();
-            List<Integer> bagInfo = new ArrayList<>();
-            for (JewelTypes jewel : JewelTypes.values()) {
-                bagInfo.add(bag.getTotalCountOf(jewel));
+        if (remove){
+            try {
+                sim.removeObjects(Arrays.asList(new Long[]{agentHandle}));
+                removed = true;
+            } catch (CborException ex) {
+                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
             }
-            leafletInfo.add(bagInfo);
-
-            for (Leaflet l : leaflets) {
-                List<Integer> lInfo = new ArrayList<>();
+        } else {
+            List<Long> objectsInVision = new ArrayList<Long>();
+            try {
+                List<List<Integer>> leafletInfo = new ArrayList<>();
+                List<Integer> bagInfo = new ArrayList<>();
                 for (JewelTypes jewel : JewelTypes.values()) {
-                    lInfo.add(l.getRequiredAmountOf(jewel));
+                    bagInfo.add(bag.getTotalCountOf(jewel));
                 }
-                lInfo.add(l.isDelivered() ? 1 : 0);
-                lInfo.add(l.getPayment());
-                leafletInfo.add(lInfo);
-            }
-            List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, leafletInfo, color.hls());
-            pos = (List<Float>) response.get(0);
-            ori = (List<Float>) response.get(1);
-            fuel = (float) response.get(2);
-            objectsInVision = (List<Long>) response.get(3);
-            currColor = (List<Float>) response.get(4);
+                leafletInfo.add(bagInfo);
 
-            List<Identifiable> thingsSeen = new ArrayList<>();
-            synchronized (inWorldThings) {
-                for (Thing thing : inWorldThings) {
-                    if (thing.isIncluded(objectsInVision)) {
-                        thingsSeen.add(thing);
+                for (Leaflet l : leaflets) {
+                    List<Integer> lInfo = new ArrayList<>();
+                    for (JewelTypes jewel : JewelTypes.values()) {
+                        lInfo.add(l.getRequiredAmountOf(jewel));
+                    }
+                    lInfo.add(l.isDelivered() ? 1 : 0);
+                    lInfo.add(l.getPayment());
+                    leafletInfo.add(lInfo);
+                }
+                List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, leafletInfo, color.hls());
+                pos = (List<Float>) response.get(0);
+                ori = (List<Float>) response.get(1);
+                fuel = (float) response.get(2);
+                objectsInVision = (List<Long>) response.get(3);
+                currColor = (List<Float>) response.get(4);
+
+                List<Identifiable> thingsSeen = new ArrayList<>();
+                synchronized (inWorldThings) {
+                    for (Thing thing : inWorldThings) {
+                        if (thing.isIncluded(objectsInVision)) {
+                            thingsSeen.add(thing);
+                        }
                     }
                 }
-            }
-            synchronized (inWorldAgents) {
-                for (Agent agent : inWorldAgents) {
-                    if (agent.initialized)
-                        if (agent.isIncluded(objectsInVision)) {
-                            thingsSeen.add(agent);
-                        }
+                synchronized (inWorldAgents) {
+                    for (Agent agent : inWorldAgents) {
+                        if (agent.initialized)
+                            if (agent.isIncluded(objectsInVision)) {
+                                thingsSeen.add(agent);
+                            }
+                    }
                 }
+
+                synchronized (thingsInVision) {
+                    thingsInVision.clear();
+                    thingsInVision.addAll(thingsSeen);
+                }
+
+            } catch (CborException ex) {
+                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
+                Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
             }
 
-            synchronized (thingsInVision) {
-                thingsInVision.clear();
-                thingsInVision.addAll(thingsSeen);
-            }
-
-        } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
+            if (rotate)
+                execRotate();
         }
-
-        if (rotate)
-            execRotate();
 
     }
 
@@ -466,5 +477,9 @@ public class Agent extends Identifiable {
 
     public void setNPC(boolean NPC) {
         this.isNPC = NPC;
+    }
+
+    public void setRemove(boolean remove){
+        this.remove = remove;
     }
 }

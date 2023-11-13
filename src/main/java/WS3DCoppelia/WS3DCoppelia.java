@@ -104,6 +104,8 @@ public class WS3DCoppelia {
             }
         }
         synchronized(inWorldAgents){
+            List<Agent> excludedAgents = inWorldAgents.stream().filter(t->t.removed).collect(Collectors.toList());
+            inWorldAgents.removeAll(excludedAgents);
             for(Agent agt : inWorldAgents){
                 agt.run(inWorldThings, inWorldAgents, worldScript);
             }
