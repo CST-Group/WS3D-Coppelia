@@ -113,7 +113,15 @@ public class Agent extends Identifiable {
             try {
                 if (isNPC) {
                     List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, new ArrayList<>(), color.hls());
-                    pos = (List<Float>) response.get(0);
+                    List<Object> response0 = (List<Object>) response.get(0);
+                    if (response0.get(0) instanceof Long){
+                        pos = new ArrayList<>();
+                        for (Object dim : response0){
+                            pos.add(Float.parseFloat(dim.toString()));
+                        }
+                    } else {
+                        pos = (List<Float>) response.get(0);
+                    }
                     ori = (List<Float>) response.get(1);
                 } else {
                     List<List<Integer>> leafletInfo = new ArrayList<>();
@@ -133,7 +141,15 @@ public class Agent extends Identifiable {
                         leafletInfo.add(lInfo);
                     }
                     List<Object> response = (List<Object>) sim.callScriptFunction("status", agentScript, score, leafletInfo, color.hls());
-                    pos = (List<Float>) response.get(0);
+                    List<Object> response0 = (List<Object>) response.get(0);
+                    if (response0.get(0) instanceof Long){
+                        pos = new ArrayList<>();
+                        for (Object dim : response0){
+                            pos.add(Float.parseFloat(dim.toString()));
+                        }
+                    } else {
+                        pos = (List<Float>) response.get(0);
+                    }
                     ori = (List<Float>) response.get(1);
                     fuel = (float) response.get(2);
                     objectsInVision = (List<Long>) response.get(3);
