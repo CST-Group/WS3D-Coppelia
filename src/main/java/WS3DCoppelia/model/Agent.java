@@ -123,6 +123,19 @@ public class Agent extends Identifiable {
                         pos = (List<Float>) response.get(0);
                     }
                     ori = (List<Float>) response.get(1);
+                    objectsInVision = (List<Long>) response.get(3);
+                    List<Identifiable> thingsSeen = new ArrayList<>();
+                    synchronized (inWorldThings) {
+                        for (Thing thing : inWorldThings) {
+                            if (thing.isIncluded(objectsInVision)) {
+                                thingsSeen.add(thing);
+                            }
+                        }
+                    }
+                    synchronized (thingsInVision) {
+                        thingsInVision.clear();
+                        thingsInVision.addAll(thingsSeen);
+                    }
                 } else {
                     List<List<Integer>> leafletInfo = new ArrayList<>();
                     List<Integer> bagInfo = new ArrayList<>();
