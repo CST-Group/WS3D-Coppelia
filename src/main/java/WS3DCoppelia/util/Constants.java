@@ -91,6 +91,8 @@ public class Constants {
             + "\n"
             + "def sysCall_init():\n"
             + "    # do some initialization here\n"
+            + "    sim = require('sim')\n"
+            + "    simUI = require('simUI')\n"
             + "    sim.setFloatSignal(fuel_id, 1000.1)\n" //.1 so the fuel value returned by NPCs is identified as Float
             + "\n"
             + "def sysCall_actuation():\n"

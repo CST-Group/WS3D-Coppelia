@@ -26,9 +26,9 @@ import java.util.logging.Logger;
  */
 public class Agent extends Identifiable {
     private RemoteAPIObjects._sim sim;
-    private Object agentHandle;
-    private Object worldScript;
-    private Object agentScript;
+    private long agentHandle;
+    private long worldScript;
+    private long agentScript;
 
     private List<Double> pos;
     private List<Double> ori;
@@ -89,7 +89,8 @@ public class Agent extends Identifiable {
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
 
-            agentScript = (Object) sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb(), isNPC ? "True" : "False");
+            Object[] response = sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb(), isNPC ? "True" : "False");
+            agentScript = (long) response[0];
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -98,8 +99,8 @@ public class Agent extends Identifiable {
     private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents) {
         if (remove) {
             try {
-                Object childHandle = sim.getObjectChild(agentHandle, 0);
-                while (childHandle != null){
+                long childHandle = sim.getObjectChild(agentHandle, 0);
+                while (childHandle != -1){
                     sim.removeObjects(Arrays.asList(new Object[]{childHandle}));
                     childHandle = sim.getObjectChild(agentHandle, 0);
                 }
@@ -153,20 +154,20 @@ public class Agent extends Identifiable {
                         lInfo.add(l.getPayment());
                         leafletInfo.add(lInfo);
                     }
-                    Object[] response = sim.callScriptFunction("status", agentScript, score, leafletInfo, color.hls());
-                    List<Object> response0 = (List<Object>) response[0];
-                    if (response0.get(0) instanceof Long){
+                    Object[] responseObject = sim.callScriptFunction("status", agentScript, score, leafletInfo, color.hls());
+                    List<Object> response = (List<Object>) responseObject[0];
+                    if (response.get(0) instanceof Long){
                         pos = new ArrayList<>();
-                        for (Object dim : response0){
+                        for (Object dim : response){
                             pos.add(Double.parseDouble(dim.toString()));
                         }
                     } else {
-                        pos = (List<Double>) response[0];
+                        pos = (List<Double>) response.get(0);
                     }
-                    ori = (List<Double>) response[1];
-                    fuel = (double) response[2];
-                    objectsInVision = (List<Object>) response[3];
-                    currColor = (List<Double>) response[4];
+                    ori = (List<Double>) response.get(1);
+                    fuel = (double) response.get(2);
+                    objectsInVision = (List<Object>) response.get(3);
+                    currColor = (List<Double>) response.get(4);
 
                     List<Identifiable> thingsSeen = new ArrayList<>();
                     synchronized (inWorldThings) {
@@ -181,6 +182,7 @@ public class Agent extends Identifiable {
                             if (agent.initialized)
                                 if (agent.isIncluded(objectsInVision)) {
                                     thingsSeen.add(agent);
+                                    System.out.println("Seen");
                                 }
                         }
                     }
@@ -254,7 +256,7 @@ public class Agent extends Identifiable {
         }
     }
 
-    public void run(List<Thing> inWorldThings, List<Agent> inWorldAgents, Object worldScript_) {
+    public void run(List<Thing> inWorldThings, List<Agent> inWorldAgents, long worldScript_) {
         if (!initialized) {
             worldScript = worldScript_;
             this.init();
@@ -511,7 +513,7 @@ public class Agent extends Identifiable {
         //The visible object detected by the camera is the sub-object
         //with the agent mesh, not the invisible one containing the
         //agent's script, thus the +1
-        return handleList.contains(agentHandle);
+        return handleList.contains(agentHandle-1);
     }
 
     public void setNPC(boolean NPC) {

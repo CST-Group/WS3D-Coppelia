@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class Thing extends Identifiable {
     private RemoteAPIObjects._sim sim;
-    private Object thingHandle;
+    private long thingHandle;
     private List<Double> pos;
     public boolean removing = false;
     public boolean removed = false;
@@ -78,7 +78,9 @@ public class Thing extends Identifiable {
 
             Long floorHandle =  sim.getObject("/Floor");
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-            thingHandle = (Object[]) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
+            Object[] response = sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
+            System.out.println(response.getClass());
+            thingHandle = ((ArrayList<Long>) response[0]).get(0);
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -94,11 +96,12 @@ public class Thing extends Identifiable {
         try{
             Long floorHandle =  sim_.getObject("/Floor");
             Long script = sim_.getScript(sim_.scripttype_childscript, floorHandle, "");
-            Object[] thingHandles = sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors, categories);
+            Object[] responseObject = sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors, categories);
+            ArrayList<Long> thingHandles = (ArrayList<Long>) responseObject[0];
             // System.out.println(sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors));
-            // System.out.println(thingHandles);
+            //System.out.println(((ArrayList)thingHandles[0]).get(0).getClass());
             for(int i = 0; i < things.size(); i++){
-                things.get(i).setHandle(thingHandles[i]);
+                things.get(i).setHandle(thingHandles.get(i));
                 things.get(i).setInitialized();
             }
         } catch(CborException ex){
@@ -206,7 +209,7 @@ public class Thing extends Identifiable {
         this.initialized = true;
     }
 
-    public void setHandle(Object handle){
+    public void setHandle(long handle){
         this.thingHandle = handle;
     }
 
