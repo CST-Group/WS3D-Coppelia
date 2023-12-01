@@ -67,8 +67,8 @@ public class GoToClosestApple extends Codelet {
 
 		if(closestApple != null)
 		{
-			float appleX=0;
-			float appleY=0;
+			double appleX=0;
+			double appleY=0;
 			try {
                                 appleX = closestApple.getPos().get(0);
                                 appleY = closestApple.getPos().get(1);
@@ -77,8 +77,8 @@ public class GoToClosestApple extends Codelet {
 				e.printStackTrace();
 			}
 
-			float selfX=cis.position.get(0);
-			float selfY=cis.position.get(1);
+			double selfX=cis.position.get(0);
+			double selfY=cis.position.get(1);
 
 			double distance = calculateDistance((double)selfX, (double)selfY, (double)appleX, (double)appleY);
 			JSONObject message=new JSONObject();

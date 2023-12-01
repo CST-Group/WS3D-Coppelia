@@ -33,7 +33,7 @@ public class WS3DCoppelia {
     private RemoteAPIObjects._sim sim;
     private List<Agent> inWorldAgents = Collections.synchronizedList(new ArrayList());
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
-    private float width = 5, heigth = 5;
+    private double width = 5, heigth = 5;
     private Long worldScript;
 
     /**
@@ -58,7 +58,7 @@ public class WS3DCoppelia {
      *
      * @author bruno
      */
-    public WS3DCoppelia(float width_, float heigth_){
+    public WS3DCoppelia(double width_, double heigth_){
         client = new RemoteAPIClient();
         sim = client.getObject().sim();
         try{
@@ -123,7 +123,7 @@ public class WS3DCoppelia {
         client.setStepping(false);
         sim.startSimulation();
         
-        float startTime = sim.getSimulationTime();
+        double startTime = sim.getSimulationTime();
         while(sim.getSimulationTime() - startTime < 1){}
         
         Long floorHandle;
@@ -134,11 +134,11 @@ public class WS3DCoppelia {
             System.out.println("No default floor to exclude");
         }
         floorHandle = sim.loadModel(System.getProperty("user.dir") + "/floor.ttm");
-        List<Float> floorSize = sim.getShapeBB(floorHandle);
+        List<Double> floorSize = sim.getShapeBB(floorHandle);
         floorSize.set(0, width);
         floorSize.set(1, heigth);
         sim.setShapeBB(floorHandle, floorSize);
-        List<Float> floorPos = Arrays.asList(new Float[]{width/2, heigth/2, (float) -0.02});
+        List<Double> floorPos = Arrays.asList(new Double[]{width/2, heigth/2, -0.02});
         sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
         
         worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
@@ -179,7 +179,7 @@ public class WS3DCoppelia {
      *
      * @see Agent
      */
-    public Agent createAgent(float x, float y){
+    public Agent createAgent(double x, double y){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
@@ -200,7 +200,7 @@ public class WS3DCoppelia {
      *
      * @see Agent
      */
-    public Agent createAgent(float x, float y, Color color){
+    public Agent createAgent(double x, double y, Color color){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
@@ -212,7 +212,7 @@ public class WS3DCoppelia {
         return newAgent;
     }
 
-    public Agent createNPCAgent(float x, float y, Color color){
+    public Agent createNPCAgent(double x, double y, Color color){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
@@ -236,7 +236,7 @@ public class WS3DCoppelia {
      * @see Thing
      * @see ThingsType
      */
-    public Thing createThing(ThingsType category, float x, float y){
+    public Thing createThing(ThingsType category, double x, double y){
         //Ensures limit
         x = (x > width) ? width : (x < 0 ? 0: x );
         y = (y > heigth) ? heigth : (y < 0 ? 0: y );
@@ -261,7 +261,7 @@ public class WS3DCoppelia {
      * @see Thing
      * @see BrickTypes
      */
-    public Thing createBrick(BrickTypes type, float x1, float y1, float x2, float y2){
+    public Thing createBrick(BrickTypes type, double x1, double y1, double x2, double y2){
         Thing newBrick = new Thing(sim, type, x1, y1, x2, y2);
         synchronized (inWorldThings) {
             inWorldThings.add(newBrick);
@@ -269,7 +269,7 @@ public class WS3DCoppelia {
         return newBrick;
     }
     
-    public boolean isOccupied(float x, float y){
+    public boolean isOccupied(double x, double y){
         synchronized(inWorldThings){
             for(Thing thg : inWorldThings){
                 if (thg.isInOccupancyArea(x, y)) return true;
@@ -284,11 +284,11 @@ public class WS3DCoppelia {
         return false;
     }
     
-    public float getWorldWidth(){
+    public double getWorldWidth(){
         return width;
     }
     
-    public float getWorldHeigth(){
+    public double getWorldHeigth(){
         return heigth;
     }
     
