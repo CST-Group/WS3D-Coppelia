@@ -4,6 +4,7 @@
  */
 package WS3DCoppelia.model;
 
+import WS3DCoppelia.util.Constants;
 import WS3DCoppelia.util.Constants.ThingsType;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,5 +58,17 @@ public class Bag {
      */
     public int getTotalCountOf(ThingsType type){
         return content.getOrDefault(type, 0);
+    }
+
+    public int getTotalNumberFood(){
+        return getTotalNumberNPFood() + getTotalNumberPFood();
+    }
+
+    public int getTotalNumberPFood() {
+        return getTotalCountOf(Constants.FoodTypes.PFOOD);
+    }
+
+    public int getTotalNumberNPFood() {
+        return getTotalCountOf(Constants.FoodTypes.NPFOOD);
     }
 }

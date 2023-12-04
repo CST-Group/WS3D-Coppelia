@@ -23,9 +23,7 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import Demo.memory.CreatureInnerSense;
-import Demo.Environment;
-import WS3DCoppelia.model.Agent;
-import co.nstant.in.cbor.CborException;
+import WS3DCoppelia.model.Creature;
 
 
 /**
@@ -37,10 +35,10 @@ import co.nstant.in.cbor.CborException;
 public class InnerSense extends Codelet {
 
 	private Memory innerSenseMO;
-        private Agent creature;
+        private Creature creature;
         private CreatureInnerSense cis;
 
-	public InnerSense(Agent c) {
+	public InnerSense(Creature c) {
                 creature = c;
                 this.name = "InnerSense";
 	}

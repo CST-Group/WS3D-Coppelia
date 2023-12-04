@@ -137,6 +137,26 @@ public class Thing extends Identifiable {
         return pos;
     }
 
+    public WorldPoint getCenterPosition(){
+        return new WorldPoint(pos.get(0), pos.get(1));
+    }
+
+    public double getX1(){
+        return pos.get(0) - width / 2;
+    }
+
+    public double getX2(){
+        return pos.get(0) + width / 2;
+    }
+
+    public double getY1(){
+        return pos.get(1) - width / 2;
+    }
+
+    public double getY2(){
+        return pos.get(1) + width / 2;
+    }
+
     public ThingsType thingType(){
         return category;
     }
@@ -217,7 +237,11 @@ public class Thing extends Identifiable {
         return width * scale;
     }
 
-    public double getDepth() {
+    public double getHeight() {
         return depth * scale;
+    }
+
+    public String getName(){
+        return category.typeName() + "_" + getId();
     }
 }

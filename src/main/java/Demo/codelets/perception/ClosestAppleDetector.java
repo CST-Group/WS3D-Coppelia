@@ -21,14 +21,13 @@ package Demo.codelets.perception;
 
 
 
-import Demo.Environment;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
-import java.util.Arrays;
+
 import java.util.Collections;
 import Demo.memory.CreatureInnerSense;
-import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Creature;
 import WS3DCoppelia.model.Thing;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,11 +41,11 @@ public class ClosestAppleDetector extends Codelet {
 	private Memory knownMO;
 	private Memory closestAppleMO;
 	private Memory innerSenseMO;
-        private Agent creature;
+        private Creature creature;
 	
         private List<Thing> known;
 
-	public ClosestAppleDetector(Agent c) {
+	public ClosestAppleDetector(Creature c) {
             creature = c;
             this.name = "ClosestAppleDetector";
 	}

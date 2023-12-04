@@ -24,16 +24,17 @@ import java.util.logging.Logger;
  *
  * @author bruno
  */
-public class Agent extends Identifiable {
+public class Creature extends Identifiable {
     private RemoteAPIObjects._sim sim;
     private long agentHandle;
     private long worldScript;
     private long agentScript;
 
     private List<Double> pos;
+    private double vel = 0.02;
     private List<Double> ori;
     private double fuel;
-    private List<Identifiable> thingsInVision = Collections.synchronizedList(new ArrayList());
+    private List<Thing> thingsInVision = Collections.synchronizedList(new ArrayList());
     private Bag bag = new Bag();
     private int score = 0;
     private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
@@ -59,7 +60,7 @@ public class Agent extends Identifiable {
      * @param width  Environment width for determining movement limits.
      * @param heigth Environment height for determining movement limits.
      */
-    public Agent(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth) {
+    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth) {
         color = Color.AGENT_GREEN;
         currColor = color.rgb();
         sim = sim_;
@@ -72,7 +73,7 @@ public class Agent extends Identifiable {
         }
     }
 
-    public Agent(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_) {
+    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_) {
         color = color_;
         currColor = color.rgb();
         sim = sim_;
@@ -92,11 +93,11 @@ public class Agent extends Identifiable {
             Object[] response = sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb(), isNPC ? "True" : "False");
             agentScript = (long) response[0];
         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void updateState(List<Thing> inWorldThings, List<Agent> inWorldAgents) {
+    private void updateState(List<Thing> inWorldThings, List<Creature> inWorldAgents) {
         if (remove) {
             try {
                 long childHandle = sim.getObjectChild(agentHandle, 0);
@@ -107,7 +108,7 @@ public class Agent extends Identifiable {
                 sim.removeObjects(Arrays.asList(new Object[]{agentHandle}));
                 removed = true;
             } catch (CborException ex) {
-                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             List<Object> objectsInVision = new ArrayList<Object>();
@@ -125,7 +126,7 @@ public class Agent extends Identifiable {
                     }
                     ori = (List<Double>) response[1];
                     objectsInVision = (List<Object>) response[3];
-                    List<Identifiable> thingsSeen = new ArrayList<>();
+                    List<Thing> thingsSeen = new ArrayList<>();
                     synchronized (inWorldThings) {
                         for (Thing thing : inWorldThings) {
                             if (thing.isIncluded(objectsInVision)) {
@@ -169,7 +170,7 @@ public class Agent extends Identifiable {
                     objectsInVision = (List<Object>) response.get(3);
                     currColor = (List<Double>) response.get(4);
 
-                    List<Identifiable> thingsSeen = new ArrayList<>();
+                    List<Thing> thingsSeen = new ArrayList<>();
                     synchronized (inWorldThings) {
                         for (Thing thing : inWorldThings) {
                             if (thing.isIncluded(objectsInVision)) {
@@ -177,15 +178,15 @@ public class Agent extends Identifiable {
                             }
                         }
                     }
-                    synchronized (inWorldAgents) {
-                        for (Agent agent : inWorldAgents) {
-                            if (agent.initialized)
-                                if (agent.isIncluded(objectsInVision)) {
-                                    thingsSeen.add(agent);
-                                    System.out.println("Seen");
-                                }
-                        }
-                    }
+                    //synchronized (inWorldAgents) {
+                    //    for (Creature agent : inWorldAgents) {
+                    //        if (agent.initialized)
+                    //            if (agent.isIncluded(objectsInVision)) {
+                    //                thingsSeen.add(agent);
+                    //                System.out.println("Seen");
+                    //            }
+                    //    }
+                    //}
 
                     synchronized (thingsInVision) {
                         thingsInVision.clear();
@@ -193,9 +194,9 @@ public class Agent extends Identifiable {
                     }
                 }
             } catch (CborException ex) {
-                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
-                Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
+                Logger.getLogger(Creature.class.getName()).log(Level.WARNING, "Agent missed an update step");
             }
 
             if (rotate)
@@ -256,7 +257,7 @@ public class Agent extends Identifiable {
         }
     }
 
-    public void run(List<Thing> inWorldThings, List<Agent> inWorldAgents, long worldScript_) {
+    public void run(List<Thing> inWorldThings, List<Creature> inWorldAgents, long worldScript_) {
         if (!initialized) {
             worldScript = worldScript_;
             this.init();
@@ -273,9 +274,9 @@ public class Agent extends Identifiable {
      * @param x The x coordinate of the destination.
      * @param y The y coordinate of the destination.
      */
-    public void moveTo(double x, double y) {
+    public void moveTo(double v, double x, double y) {
         synchronized (commandQueue) {
-            commandQueue.put("move", Arrays.asList(new Double[]{x, y}));
+            commandQueue.put("move", Arrays.asList(new Double[]{v, x, y}));
         }
     }
 
@@ -326,7 +327,7 @@ public class Agent extends Identifiable {
      * @param thing The object instance of the thing to be collected.
      * @see Bag
      */
-    public void sackIt(Thing thing) {
+    public void putInSack(Thing thing) {
         synchronized (commandQueue) {
             commandQueue.put("sackIt", thing);
         }
@@ -338,7 +339,7 @@ public class Agent extends Identifiable {
      * @param thingId The ID of the thing to be collected.
      * @see Bag
      */
-    public void sackIt(int thingId) {
+    public void putInSack(int thingId) {
         synchronized (commandQueue) {
             commandQueue.put("sackIt", thingId);
         }
@@ -351,7 +352,7 @@ public class Agent extends Identifiable {
      * @param leafletId The leaflet ID to be delivered.
      * @see Leaflet
      */
-    public void deliver(int leafletId) {
+    public void deliverLeaflet(int leafletId) {
         synchronized (commandQueue) {
             System.out.println(String.format("Deliver leaflet %d", leafletId));
             commandQueue.put("deliver", leafletId);
@@ -360,8 +361,11 @@ public class Agent extends Identifiable {
 
     private void execMove(List<Double> params) {
         try {
-            double goalX = params.get(0);
-            double goalY = params.get(1);
+            double targetVel = params.get(0);
+            vel = targetVel;
+            double goalX = params.get(1);
+            double goalY = params.get(2);
+
             goalX = (goalX > xLimit) ? xLimit : (goalX < 0.1f ? 0.1f : goalX);
             goalY = (goalY > yLimit) ? yLimit : (goalY < 0.1f ? 0.1f : goalY);
             double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
@@ -370,13 +374,13 @@ public class Agent extends Identifiable {
             List<Double> targetOri = new ArrayList<>(ori);
             targetOri.set(2,  goalPitch);
 
-            sim.callScriptFunction("move_agent", agentScript, targetPos, targetOri);
+            sim.callScriptFunction("move_agent", agentScript, targetPos, targetOri, targetVel);
 
             rotate = false;
         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Move command return");
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Move command return");
         }
     }
 
@@ -387,9 +391,9 @@ public class Agent extends Identifiable {
 
             rotate = false;
         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Eat command return");
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Eat command return");
         }
     }
 
@@ -397,9 +401,9 @@ public class Agent extends Identifiable {
         try {
             sim.callScriptFunction("rotate_agent", agentScript);
         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Rotate command return");
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Rotate command return");
         }
 
     }
@@ -408,9 +412,9 @@ public class Agent extends Identifiable {
         try {
             sim.callScriptFunction("stop_agent", agentScript);
         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Stop command return");
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Stop command return");
         }
 
     }
@@ -425,7 +429,7 @@ public class Agent extends Identifiable {
                 }
             }
         } catch (CborException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -463,19 +467,19 @@ public class Agent extends Identifiable {
     /**
      * @return A list containing two double values. First is the x coordinate and second the y coordinate of agent's position
      */
-    public List<Double> getPosition() {
-        return pos;
+    public WorldPoint getPosition() {
+        return new WorldPoint(pos.get(0), pos.get(1));
     }
 
-    public List<Identifiable> getThingsInVision() {
+    public double getSpeed(){
+        return vel;
+    }
+
+    public List<Thing> getThingsInVision() {
         return thingsInVision;
     }
 
-    public List<Double> getColor() {
-        return currColor;
-    }
-
-    public String getColorName() {
+    public String getColor() {
         String[] split = color.name().split("_");
         return split.length > 1 ? split[1] : color.name();
     }
@@ -522,5 +526,10 @@ public class Agent extends Identifiable {
 
     public void setRemove(boolean remove) {
         this.remove = remove;
+    }
+
+    public double calculateDistanceTo(Thing th){
+        WorldPoint thPos = th.getCenterPosition();
+        return thPos.distanceTo(getPosition());
     }
 }

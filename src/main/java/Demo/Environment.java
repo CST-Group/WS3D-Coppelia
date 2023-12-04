@@ -10,9 +10,7 @@ package Demo;
  */
 
 import WS3DCoppelia.WS3DCoppelia;
-import WS3DCoppelia.model.Agent;
-import WS3DCoppelia.model.Thing;
-import WS3DCoppelia.util.Constants;
+import WS3DCoppelia.model.Creature;
 import WS3DCoppelia.util.ResourceGenerator;
 import co.nstant.in.cbor.CborException;
 import java.io.IOException;
@@ -22,7 +20,7 @@ import java.util.logging.Logger;
 public class Environment {
     
     public WS3DCoppelia world;
-    public Agent creature;
+    public Creature creature;
     private ResourceGenerator rg;
     
     public Environment(){

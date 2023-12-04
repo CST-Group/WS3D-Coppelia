@@ -31,7 +31,7 @@ public class WS3DCoppelia {
     
     private RemoteAPIClient client;
     private RemoteAPIObjects._sim sim;
-    private List<Agent> inWorldAgents = Collections.synchronizedList(new ArrayList());
+    private List<Creature> inWorldAgents = Collections.synchronizedList(new ArrayList());
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
     private double width = 5, heigth = 5;
     private Long worldScript;
@@ -46,7 +46,7 @@ public class WS3DCoppelia {
             NativeUtils.loadFileFromJar("/workspace/agent_model.ttm");
             NativeUtils.loadFileFromJar("/workspace/floor.ttm");
         } catch(IOException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -65,7 +65,7 @@ public class WS3DCoppelia {
             NativeUtils.loadFileFromJar("/workspace/agent_model.ttm");
             NativeUtils.loadFileFromJar("/workspace/floor.ttm");
         } catch(IOException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         width = width_;
@@ -104,9 +104,9 @@ public class WS3DCoppelia {
             }
         }
         synchronized(inWorldAgents){
-            List<Agent> excludedAgents = inWorldAgents.stream().filter(t->t.removed).collect(Collectors.toList());
+            List<Creature> excludedAgents = inWorldAgents.stream().filter(t->t.removed).collect(Collectors.toList());
             inWorldAgents.removeAll(excludedAgents);
-            for(Agent agt : inWorldAgents){
+            for(Creature agt : inWorldAgents){
                 agt.run(inWorldThings, inWorldAgents, worldScript);
             }
         }
@@ -177,14 +177,14 @@ public class WS3DCoppelia {
      * @param y The y coordinate to initialize the agent.
      * @return The agent object to access its information and action execution.
      *
-     * @see Agent
+     * @see Creature
      */
-    public Agent createAgent(double x, double y){
+    public Creature createAgent(double x, double y){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
         
-        Agent newAgent = new Agent(sim, x, y, width, heigth);
+        Creature newAgent = new Creature(sim, x, y, width, heigth);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
         }
@@ -198,26 +198,26 @@ public class WS3DCoppelia {
      * @param y The y coordinate to initialize the agent.
      * @return The agent object to access its information and action execution.
      *
-     * @see Agent
+     * @see Creature
      */
-    public Agent createAgent(double x, double y, Color color){
+    public Creature createAgent(double x, double y, Color color){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Agent newAgent = new Agent(sim, x, y, width, heigth, color);
+        Creature newAgent = new Creature(sim, x, y, width, heigth, color);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
         }
         return newAgent;
     }
 
-    public Agent createNPCAgent(double x, double y, Color color){
+    public Creature createNPCAgent(double x, double y, Color color){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Agent newAgent = new Agent(sim, x, y, width, heigth, color);
+        Creature newAgent = new Creature(sim, x, y, width, heigth, color);
         newAgent.setNPC(true);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
@@ -276,7 +276,7 @@ public class WS3DCoppelia {
             }
         }
         synchronized(inWorldAgents){
-            for(Agent agt : inWorldAgents){
+            for(Creature agt : inWorldAgents){
                 if (agt.isInOccupancyArea(x, y)) return true;
             }
         }

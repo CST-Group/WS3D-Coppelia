@@ -19,10 +19,6 @@
 
 package Demo.codelets.behaviors;
 
-import Demo.Environment;
-import java.awt.Point;
-import java.awt.geom.Point2D;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import br.unicamp.cst.core.entities.Codelet;
@@ -30,7 +26,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import Demo.memory.CreatureInnerSense;
-import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Creature;
 import WS3DCoppelia.model.Thing;
 
 public class GoToClosestApple extends Codelet {
@@ -40,9 +36,9 @@ public class GoToClosestApple extends Codelet {
 	private MemoryContainer legsMO;
 	private int creatureBasicSpeed;
 	private double reachDistance;
-        private Agent creature;
+        private Creature creature;
 
-	public GoToClosestApple(int creatureBasicSpeed, double reachDistance, Agent c) {
+	public GoToClosestApple(int creatureBasicSpeed, double reachDistance, Creature c) {
                 creature = c;
 		this.creatureBasicSpeed=creatureBasicSpeed;
 		this.reachDistance=reachDistance;

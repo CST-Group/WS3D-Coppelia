@@ -20,8 +20,7 @@
 package Demo.codelets.motor;
 
 
-import Demo.Environment;
-import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Creature;
 import org.json.JSONObject;
 
 import br.unicamp.cst.core.entities.Codelet;
@@ -43,12 +42,12 @@ public class LegsActionCodelet extends Codelet{
 	private double previousTargetx=0;
 	private double previousTargety=0;
 	private String previousLegsAction="";
-        private Agent creature;
+        private Creature creature;
         double old_angle = 0;
         int k=0;
         static Logger log = Logger.getLogger(LegsActionCodelet.class.getCanonicalName());
 
-	public LegsActionCodelet(Agent c) {
+	public LegsActionCodelet(Creature c) {
                 creature = c;
                 this.name = "LegsActionCodelet";
 	}

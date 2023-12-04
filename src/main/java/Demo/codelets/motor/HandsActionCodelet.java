@@ -20,9 +20,7 @@
 package Demo.codelets.motor;
 
 
-import Demo.Environment;
-import static Demo.codelets.motor.LegsActionCodelet.log;
-import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Creature;
 import WS3DCoppelia.model.Thing;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +29,6 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -47,11 +44,11 @@ public class HandsActionCodelet extends Codelet{
 
 	private Memory handsMO;
 	private String previousHandsCommand="";
-        private Agent creature;
+        private Creature creature;
         private Random r = new Random();
         static Logger log = Logger.getLogger(HandsActionCodelet.class.getCanonicalName());
 
-	public HandsActionCodelet(Agent c) {
+	public HandsActionCodelet(Creature c) {
                 creature = c;
                 this.name = "HandsActionCodelet";
 	}

@@ -19,10 +19,6 @@
 
 package Demo.codelets.behaviors;
 
-import Demo.Environment;
-import java.awt.Point;
-import java.awt.geom.Point2D;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +26,6 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import Demo.memory.CreatureInnerSense;
-import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.model.Thing;
 import java.util.ArrayList;
 import java.util.List;

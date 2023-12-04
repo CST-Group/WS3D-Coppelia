@@ -19,10 +19,8 @@
 
 package Demo.codelets.sensors;
 
-import Demo.Environment;
-import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Creature;
 import WS3DCoppelia.model.Identifiable;
-import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -39,10 +37,10 @@ import java.util.List;
 public class Vision extends Codelet{
     
 	private Memory visionMO;
-        private Agent creature;
+        private Creature creature;
 
 
-	public Vision(Agent c) {
+	public Vision(Creature c) {
             creature = c;		
             this.name = "Vision";
 	}
