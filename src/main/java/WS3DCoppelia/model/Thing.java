@@ -26,42 +26,42 @@ import java.util.stream.Collectors;
  */
 public class Thing extends Identifiable {
     private RemoteAPIObjects._sim sim;
-    private Long thingHandle;
-    private List<Float> pos;
+    private long thingHandle;
+    private List<Double> pos;
     public boolean removing = false;
     public boolean removed = false;
 
-    public float width = (float) 0.1, depth = (float) 0.1;
-    private Float scale = 1.0F;
+    public double width = 0.1, depth = 0.1;
+    private double scale = 1.0F;
 
     private ThingsType category;
-    private List<Float> color = new ArrayList<>();
+    private List<Double> color = new ArrayList<>();
 
     private boolean initialized = false;
 
-    public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, float x, float y){
+    public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, double x, double y){
         sim = sim_;
-        pos = Arrays.asList(new Float[]{x, y, (float) 0.05});
+        pos = Arrays.asList(new Double[]{x, y, 0.05});
         category = category_;
-        List<Float> colorCat = category.color().rgb();
-        for (Float colorElem : colorCat){
-            color.add(Math.min(1f,Math.max(0f, colorElem + (new Random().nextFloat()-0.5f)*0.1f)));
+        List<Double> colorCat = category.color().rgb();
+        for (Double colorElem : colorCat){
+            color.add(Math.min(1f,Math.max(0f, colorElem + (new Random().nextDouble()-0.5f)*0.1f)));
         }
 
     }
 
-    public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, float x1, float y1, float x2, float y2){
+    public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, double x1, double y1, double x2, double y2){
         sim = sim_;
         width = Math.abs(x1 - x2);
         depth = Math.abs(y1 - y2);
         if( category_ instanceof Constants.BrickTypes)
-            pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, Constants.BRICK_HEIGTH / 2});
+            pos = Arrays.asList(new Double[]{(x1 + x2) / 2, (y1 + y2) / 2, Constants.BRICK_HEIGTH / 2});
         else
-            pos = Arrays.asList(new Float[]{(x1 + x2) / 2, (y1 + y2) / 2, (float) 0.05});
+            pos = Arrays.asList(new Double[]{(x1 + x2) / 2, (y1 + y2) / 2, (double) 0.05});
         category = category_;
-        List<Float> colorCat = category.color().rgb();
-        for (Float colorElem : colorCat){
-            color.add(Math.min(1f,Math.max(0f, colorElem + (new Random().nextFloat()-0.5f)*0.1f)));
+        List<Double> colorCat = category.color().rgb();
+        for (Double colorElem : colorCat){
+            color.add(Math.min(1f,Math.max(0f, colorElem + (new Random().nextDouble()-0.5f)*0.1f)));
         }
 
     }
@@ -69,16 +69,18 @@ public class Thing extends Identifiable {
     private void init(){
 
         try {
-            List<Float> size;
+            List<Double> size;
             if (category instanceof Constants.BrickTypes){
-                size = Arrays.asList(new Float[]{width, depth, Constants.BRICK_HEIGTH});
+                size = Arrays.asList(new Double[]{width, depth, Constants.BRICK_HEIGTH});
             } else {
                 size = THING_SIZE;
             }
 
             Long floorHandle =  sim.getObject("/Floor");
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-            thingHandle = (Long) sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
+            Object[] response = sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
+            System.out.println(response.getClass());
+            thingHandle = ((ArrayList<Long>) response[0]).get(0);
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -86,17 +88,18 @@ public class Thing extends Identifiable {
 
     public static void bulkInit(List<Thing> things, RemoteAPIObjects._sim sim_){
         List<Integer> shapes = things.stream().map(t->t.getShape()).collect(Collectors.toList());
-        List<List<Float>> poss = things.stream().map(t->t.getPos()).collect(Collectors.toList());
-        List<List<Float>> sizes = things.stream().map(t->t.getSize()).collect(Collectors.toList());
-        List<List<Float>> colors = things.stream().map(t->t.getColor()).collect(Collectors.toList());
+        List<List<Double>> poss = things.stream().map(t->t.getPos()).collect(Collectors.toList());
+        List<List<Double>> sizes = things.stream().map(t->t.getSize()).collect(Collectors.toList());
+        List<List<Double>> colors = things.stream().map(t->t.getColor()).collect(Collectors.toList());
         List<Integer> categories = things.stream().map(t->t.isFood() ? 1 : t.isJewel() ? 2 : t.isBrick() ? 3 : 0).collect(Collectors.toList());
 
         try{
             Long floorHandle =  sim_.getObject("/Floor");
             Long script = sim_.getScript(sim_.scripttype_childscript, floorHandle, "");
-            ArrayList<Long> thingHandles = (ArrayList<Long>) sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors, categories);
+            Object[] responseObject = sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors, categories);
+            ArrayList<Long> thingHandles = (ArrayList<Long>) responseObject[0];
             // System.out.println(sim_.callScriptFunction("bulk_init", script, shapes, sizes, poss, colors));
-            // System.out.println(thingHandles);
+            //System.out.println(((ArrayList)thingHandles[0]).get(0).getClass());
             for(int i = 0; i < things.size(); i++){
                 things.get(i).setHandle(thingHandles.get(i));
                 things.get(i).setInitialized();
@@ -130,7 +133,7 @@ public class Thing extends Identifiable {
         }
     }
 
-    public List<Float> getPos(){
+    public List<Double> getPos(){
         return pos;
     }
 
@@ -144,7 +147,7 @@ public class Thing extends Identifiable {
 
     public boolean isBrick() { return category instanceof Constants.BrickTypes; }
 
-    public float energy() {
+    public double energy() {
         if (category instanceof Constants.FoodTypes)
             return ((Constants.FoodTypes) category).energy();
         return 0;
@@ -158,15 +161,15 @@ public class Thing extends Identifiable {
         removing = true;
     }
 
-    public List<Float> getRelativePos(List<Float> source_pos) {
-        List<Float> relPos = new ArrayList<>();
+    public List<Double> getRelativePos(List<Double> source_pos) {
+        List<Double> relPos = new ArrayList<>();
         for (int i = 0; i < 3; i++){
             relPos.add(pos.get(i) - source_pos.get(i));
         }
         return relPos;
     }
 
-    public boolean isInOccupancyArea(float x, float y){
+    public boolean isInOccupancyArea(double x, double y){
         return Math.hypot( Math.abs(pos.get(0) - x),
                 Math.abs(pos.get(1) - y))
                 <= Constants.THING_OCCUPANCY_RADIUS;
@@ -180,21 +183,21 @@ public class Thing extends Identifiable {
         return category.typeName();
     }
 
-    public boolean isIncluded(List<Long> handleList){
+    public boolean isIncluded(List<Object> handleList){
         return handleList.contains(thingHandle);
     }
 
-    public List<Float> getSize(){
-        List<Float> size;
+    public List<Double> getSize(){
+        List<Double> size;
         if (category instanceof Constants.BrickTypes){
-            size = Arrays.asList(new Float[]{width, depth, Constants.BRICK_HEIGTH});
+            size = Arrays.asList(new Double[]{width, depth, Constants.BRICK_HEIGTH});
         } else {
             size = THING_SIZE;
         }
         return size.stream().map(e -> e*scale).collect(Collectors.toList());
     }
 
-    public List<Float> getColor(){
+    public List<Double> getColor(){
         return color;
     }
 
@@ -210,11 +213,11 @@ public class Thing extends Identifiable {
         this.thingHandle = handle;
     }
 
-    public float getWidth() {
+    public double getWidth() {
         return width * scale;
     }
 
-    public float getDepth() {
+    public double getDepth() {
         return depth * scale;
     }
 }

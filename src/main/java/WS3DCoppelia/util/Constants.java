@@ -14,39 +14,39 @@ import java.util.List;
  */
 public class Constants {
 
-    public static final List<Float> THING_SIZE = Arrays.asList((float) 0.1, (float) 0.1, (float) 0.1);
-    public static final float BRICK_HEIGTH = (float) 0.5;
+    public static final List<Double> THING_SIZE = Arrays.asList( 0.1,  0.1,  0.1);
+    public static final double BRICK_HEIGTH =  0.5;
     
     public enum Color {
-        RED(Arrays.asList((float) 0.95, (float) 0.25, (float) 0.25)),
-        GREEN(Arrays.asList((float) 0.25, (float) 0.95, (float) 0.25)),
-        BLUE(Arrays.asList((float) 0.25, (float) 0.25, (float) 0.95)),
-        YELLOW(Arrays.asList((float) 0.95, (float) 0.95, (float) 0.25)),
-        MAGENTA(Arrays.asList((float) 0.95, (float) 0.25, (float) 0.95)),
-        WHITE(Arrays.asList((float) 0.95, (float) 0.95, (float) 0.95)),
-        ORANGE(Arrays.asList((float) 0.95, (float) 0.65, (float) 0.25)),
-        GREY(Arrays.asList((float) 0.5, (float) 0.5, (float) 0.5)),
-        BROWN(Arrays.asList((float) 0.6, (float) 0.4, (float) 0.25)),
-        AGENT_YELLOW(Arrays.asList((float) 1, (float) 0.8, (float) 0.25)),
-        AGENT_GREEN(Arrays.asList((float) 0.55, (float) 0.8, (float) 0.15)),
-        AGENT_MAGENTA(Arrays.asList((float) 0.4, (float) 0.3, (float) 0.57)),
-        AGENT_RED(Arrays.asList((float) 0.98, (float) 0.25, (float) 0.27));
+        RED(Arrays.asList( 0.95,  0.25,  0.25)),
+        GREEN(Arrays.asList( 0.25,  0.95,  0.25)),
+        BLUE(Arrays.asList( 0.25,  0.25,  0.95)),
+        YELLOW(Arrays.asList( 0.95,  0.95,  0.25)),
+        MAGENTA(Arrays.asList( 0.95,  0.25,  0.95)),
+        WHITE(Arrays.asList( 0.95,  0.95,  0.95)),
+        ORANGE(Arrays.asList( 0.95,  0.65,  0.25)),
+        GREY(Arrays.asList( 0.5,  0.5,  0.5)),
+        BROWN(Arrays.asList( 0.6,  0.4,  0.25)),
+        AGENT_YELLOW(Arrays.asList( 1.0,  0.8,  0.25)),
+        AGENT_GREEN(Arrays.asList( 0.55,  0.8,  0.15)),
+        AGENT_MAGENTA(Arrays.asList( 0.4,  0.3,  0.57)),
+        AGENT_RED(Arrays.asList( 0.98,  0.25,  0.27));
 
-        private final List<Float> rgb;
-        private final List<Float> hls;
-        Color(List<Float> rgb){
+        private final List<Double> rgb;
+        private final List<Double> hls;
+        Color(List<Double> rgb){
             this.rgb = rgb;
             //Code from https://github.com/tips4java/tips4java
-            float r = rgb.get(0);
-            float g = rgb.get(1);
-            float b = rgb.get(2);
+            double r = rgb.get(0);
+            double g = rgb.get(1);
+            double b = rgb.get(2);
 
             //	Minimum and Maximum RGB values are used in the HSL calculations
-            float min = Math.min(r, Math.min(g, b));
-            float max = Math.max(r, Math.max(g, b));
+            double min = Math.min(r, Math.min(g, b));
+            double max = Math.max(r, Math.max(g, b));
 
             //  Calculate the Hue
-            float h = 0;
+            double h = 0;
 
             if (max == min)
                 h = 0;
@@ -58,10 +58,10 @@ public class Constants {
                 h = (60 * (r - g) / (max - min)) + 240;
 
             //  Calculate the Luminance
-            float l = (max + min) / 2;
+            double l = (max + min) / 2;
 
             //  Calculate the Saturation
-            float s = 0;
+            double s = 0;
 
             if (max == min)
                 s = 0;
@@ -72,8 +72,8 @@ public class Constants {
 
             hls = Arrays.asList(h/360, l, s);
         }
-        public List<Float> rgb() { return rgb;}
-        public List<Float> hls() { return hls;}
+        public List<Double> rgb() { return rgb;}
+        public List<Double> hls() { return hls;}
     }
     
     public static String BASE_SCRIPT = "#python\n"
@@ -91,6 +91,8 @@ public class Constants {
             + "\n"
             + "def sysCall_init():\n"
             + "    # do some initialization here\n"
+            + "    sim = require('sim')\n"
+            + "    simUI = require('simUI')\n"
             + "    sim.setFloatSignal(fuel_id, 1000.1)\n" //.1 so the fuel value returned by NPCs is identified as Float
             + "\n"
             + "def sysCall_actuation():\n"
@@ -240,9 +242,9 @@ public class Constants {
         private final int shape;
         private final Color color;
         private final String type_name;
-        private final float energy;
+        private final double energy;
         
-        FoodTypes(int shape, Color color, float energy, String name){
+        FoodTypes(int shape, Color color, double energy, String name){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
@@ -255,7 +257,7 @@ public class Constants {
         public Color color() { return color; }
         @Override
         public String typeName() { return type_name; }
-        public float energy() { return energy; }
+        public double energy() { return energy; }
     }
     
     public enum JewelTypes implements ThingsType{

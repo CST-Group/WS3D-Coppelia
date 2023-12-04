@@ -72,10 +72,10 @@ public class ClosestAppleDetector extends Codelet {
                                         closest_apple = t;
                                 }
                                 else {
-                                        List<Float> applePos = Arrays.asList(new Float[]{(float)0, (float)0});
+                                        List<Double> applePos;
                                         applePos = t.getPos();
 
-                                        List<Float> closest_applePos = Arrays.asList(new Float[]{(float)0, (float)0});
+                                        List<Double> closest_applePos;
                                         closest_applePos = closest_apple.getPos();
                                         double Dnew = calculateDistance(applePos.get(0), applePos.get(1), cis.position.get(0), cis.position.get(1));
                                         double Dclosest= calculateDistance(closest_applePos.get(0), closest_applePos.get(1), cis.position.get(0), cis.position.get(1));

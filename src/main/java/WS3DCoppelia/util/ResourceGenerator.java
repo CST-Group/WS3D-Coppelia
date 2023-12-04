@@ -36,12 +36,12 @@ public class ResourceGenerator extends Thread {
 
     private int timeInMinutes;
     private List<Thing> allThings = new ArrayList<Thing>();
-    private float width;
-    private float height;
+    private double width;
+    private double height;
     private WS3DCoppelia world;
     private boolean createFood = true, createJewel = true;
     
-    public ResourceGenerator(WS3DCoppelia world_, int timeframe, float envWidth, float envHeight) {
+    public ResourceGenerator(WS3DCoppelia world_, int timeframe, double envWidth, double envHeight) {
         super("ResourcesGenerator");
         if (timeframe == 0) timeInMinutes = Constants.TIMEFRAME;
         else timeInMinutes = timeframe;
@@ -101,7 +101,7 @@ public class ResourceGenerator extends Thread {
         int number = 1;
         Random rdX = new Random();
         Random rdY = new Random();
-        float cX, cY;
+        double cX, cY;
 
         switch (type) {
             //perishable
@@ -115,8 +115,8 @@ public class ResourceGenerator extends Thread {
         }
         for (int i = 0; i < number; i++) {
             do {
-                cX = rdX.nextFloat()* (width-0.05f) + 0.05f;
-                cY = rdY.nextFloat() * (height-0.05f) + 0.05f;
+                cX = rdX.nextDouble()* (width-0.05f) + 0.05f;
+                cY = rdY.nextDouble() * (height-0.05f) + 0.05f;
 
             } while (world.isOccupied(cX, cY));
 
@@ -129,7 +129,7 @@ public class ResourceGenerator extends Thread {
         int number = 1;
         Random rdX = new Random();
         Random rdY = new Random();
-        float cX, cY;
+        double cX, cY;
         String pointListStr = "" ;
 
         switch (type) {
@@ -154,8 +154,8 @@ public class ResourceGenerator extends Thread {
         }
         for (int i = 0; i < number; i++) {
             do {
-                cX = rdX.nextFloat()* width;
-                cY = rdY.nextFloat() * height;
+                cX = rdX.nextDouble()* width;
+                cY = rdY.nextDouble() * height;
 
             } while (world.isOccupied(cX, cY));
 

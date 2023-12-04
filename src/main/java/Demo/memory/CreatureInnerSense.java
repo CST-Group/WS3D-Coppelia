@@ -27,7 +27,7 @@ import java.util.List;
  * @author rgudwin
  */
 public class CreatureInnerSense {
-    public List<Float> position;
+    public List<Double> position;
     public double pitch;
     public double fuel;
     
