@@ -182,7 +182,7 @@ public class Agent extends Identifiable {
                             if (agent.initialized)
                                 if (agent.isIncluded(objectsInVision)) {
                                     thingsSeen.add(agent);
-                                    System.out.println("Seen");
+                                    System.out.println("Seen "+agent.getId());
                                 }
                         }
                     }
@@ -513,7 +513,7 @@ public class Agent extends Identifiable {
         //The visible object detected by the camera is the sub-object
         //with the agent mesh, not the invisible one containing the
         //agent's script, thus the +1
-        return handleList.contains(agentHandle-1);
+        return handleList.contains(agentHandle+1);
     }
 
     public void setNPC(boolean NPC) {
