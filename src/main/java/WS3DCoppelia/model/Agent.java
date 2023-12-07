@@ -182,7 +182,6 @@ public class Agent extends Identifiable {
                             if (agent.initialized)
                                 if (agent.isIncluded(objectsInVision)) {
                                     thingsSeen.add(agent);
-                                    System.out.println("Seen "+agent.getId());
                                 }
                         }
                     }
