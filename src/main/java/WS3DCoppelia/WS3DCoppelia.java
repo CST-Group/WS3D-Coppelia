@@ -35,6 +35,7 @@ public class WS3DCoppelia {
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
     private double width = 5, heigth = 5;
     private Long worldScript;
+    private WS3DCoppelia.mainTimerTask tt;
 
     /**
      * A connection to CoppeliaSim is created and necessary model files are loaded.
@@ -156,7 +157,7 @@ public class WS3DCoppelia {
         while(sim.getSimulationTime() - startTime < 2){}
         
         Timer t = new Timer();
-        WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
+        tt = new mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 100, 75);
     }
 
@@ -167,7 +168,13 @@ public class WS3DCoppelia {
      * @throws CborException
      */
     public void stopSimulation() throws CborException{
+        tt.setEnabled(false);
         sim.stopSimulation();
+    }
+
+    public void pauseSimulation() throws CborException{
+        tt.setEnabled(false);
+        sim.pauseSimulation();
     }
 
     /**
