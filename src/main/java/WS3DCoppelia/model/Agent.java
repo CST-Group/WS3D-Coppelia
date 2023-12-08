@@ -39,6 +39,7 @@ public class Agent extends Identifiable {
     private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
     private Color color;
     private List<Double> currColor;
+    private boolean verbose = false;
 
     private boolean initialized = false;
     private double fovAngle = 0.5;
@@ -72,6 +73,11 @@ public class Agent extends Identifiable {
         }
     }
 
+    public Agent(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, boolean verbose) {
+        this(sim_, x, y, width, heigth);
+        this.verbose = verbose;
+    }
+
     public Agent(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_) {
         color = color_;
         currColor = color.rgb();
@@ -83,6 +89,11 @@ public class Agent extends Identifiable {
         for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
             leaflets[i] = new Leaflet();
         }
+    }
+
+    public Agent(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_, boolean verbose) {
+        this(sim_, x, y, width, heigth, color_);
+        this.verbose = verbose;
     }
 
     private void init() {
@@ -192,9 +203,11 @@ public class Agent extends Identifiable {
                     }
                 }
             } catch (CborException ex) {
-                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
+                if (verbose)
+                    Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
-                Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
+                if (verbose)
+                    Logger.getLogger(Agent.class.getName()).log(Level.WARNING, "Agent missed an update step");
             }
 
             if (rotate)
@@ -375,7 +388,8 @@ public class Agent extends Identifiable {
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Move command return");
+            if (verbose)
+                Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Move command return");
         }
     }
 
@@ -388,7 +402,8 @@ public class Agent extends Identifiable {
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Eat command return");
+            if (verbose)
+                Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Eat command return");
         }
     }
 
@@ -398,7 +413,8 @@ public class Agent extends Identifiable {
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Rotate command return");
+            if (verbose)
+                Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Rotate command return");
         }
 
     }
@@ -409,7 +425,8 @@ public class Agent extends Identifiable {
         } catch (CborException ex) {
             Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Stop command return");
+            if (verbose)
+                Logger.getLogger(Agent.class.getName()).log(Level.INFO, "Missed Stop command return");
         }
 
     }

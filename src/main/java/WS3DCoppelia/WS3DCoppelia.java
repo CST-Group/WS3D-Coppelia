@@ -36,6 +36,7 @@ public class WS3DCoppelia {
     private double width = 5, heigth = 5;
     private Long worldScript;
     private WS3DCoppelia.mainTimerTask tt;
+    private boolean verbose = false;
 
     /**
      * A connection to CoppeliaSim is created and necessary model files are loaded.
@@ -72,7 +73,12 @@ public class WS3DCoppelia {
         width = width_;
         heigth = heigth_;  
     }
-        
+
+    public WS3DCoppelia(double width_, double heigth_, boolean verbose_){
+        this(width_, heigth_);
+        this.verbose = verbose_;
+    }
+
     
     class mainTimerTask extends TimerTask {
 
@@ -191,7 +197,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
         
-        Agent newAgent = new Agent(sim, x, y, width, heigth);
+        Agent newAgent = new Agent(sim, x, y, width, heigth, verbose);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
         }
@@ -212,7 +218,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Agent newAgent = new Agent(sim, x, y, width, heigth, color);
+        Agent newAgent = new Agent(sim, x, y, width, heigth, color, verbose);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
         }
@@ -224,7 +230,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Agent newAgent = new Agent(sim, x, y, width, heigth, color);
+        Agent newAgent = new Agent(sim, x, y, width, heigth, color, verbose);
         newAgent.setNPC(true);
         synchronized(inWorldAgents){
             inWorldAgents.add(newAgent);
