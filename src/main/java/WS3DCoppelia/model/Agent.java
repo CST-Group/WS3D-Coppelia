@@ -124,18 +124,18 @@ public class Agent extends Identifiable {
             List<Object> objectsInVision = new ArrayList<Object>();
             try {
                 if (isNPC) {
-                    Object[] response = sim.callScriptFunction("status", agentScript, score, new ArrayList<>(), color.hls());
-                    List<Object> response0 = (List<Object>) response[0];
-                    if (response0.get(0) instanceof List){
-                        pos = (List<Double>) response0.get(0);
+                    Object[] responseObject = sim.callScriptFunction("status", agentScript, score, new ArrayList<>(), color.hls());
+                    List<Object> response = (List<Object>) responseObject[0];
+                    if (response.get(0) instanceof List){
+                        pos = (List<Double>) response.get(0);
                     } else {
                         pos = new ArrayList<>();
-                        for (Object dim : response0){
+                        for (Object dim : response){
                             pos.add(Double.parseDouble(dim.toString()));
                         }
                     }
-                    ori = (List<Double>) response[1];
-                    objectsInVision = (List<Object>) response[3];
+                    ori = (List<Double>) response.get(1);
+                    objectsInVision = (List<Object>) response.get(3);
                     List<Identifiable> thingsSeen = new ArrayList<>();
                     synchronized (inWorldThings) {
                         for (Thing thing : inWorldThings) {
