@@ -78,4 +78,21 @@ public class Leaflet extends Identifiable {
         }
         completed = check;
     }
+
+    public int getNumberOfItemTypes(){
+        return requirements.keySet().size();
+    }
+
+    public String toStringFormatted(){
+        String ret = " ";
+        for (JewelTypes type : requirements.keySet()) {
+            String str = type.color().getName();
+            ret = ret + str + " ";
+            ret = ret + (requirements.get(type)).toString() + " ";
+        }
+
+        ret  = ret+payment+" "+completed+" ";
+        return ret;
+
+    }
 }

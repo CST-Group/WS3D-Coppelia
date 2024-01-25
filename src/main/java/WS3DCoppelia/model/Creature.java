@@ -34,7 +34,7 @@ public class Creature extends Identifiable {
     private double vel = 0.02;
     private List<Double> ori;
     private double fuel;
-    private List<Thing> thingsInVision = Collections.synchronizedList(new ArrayList());
+    private List<Identifiable> thingsInVision = Collections.synchronizedList(new ArrayList());
     private Bag bag = new Bag();
     private int score = 0;
     private Leaflet[] leaflets = new Leaflet[Constants.NUM_LEAFLET_PER_AGENTS];
@@ -170,7 +170,7 @@ public class Creature extends Identifiable {
                     objectsInVision = (List<Object>) response.get(3);
                     currColor = (List<Double>) response.get(4);
 
-                    List<Thing> thingsSeen = new ArrayList<>();
+                    List<Identifiable> thingsSeen = new ArrayList<>();
                     synchronized (inWorldThings) {
                         for (Thing thing : inWorldThings) {
                             if (thing.isIncluded(objectsInVision)) {
@@ -178,15 +178,14 @@ public class Creature extends Identifiable {
                             }
                         }
                     }
-                    //synchronized (inWorldAgents) {
-                    //    for (Creature agent : inWorldAgents) {
-                    //        if (agent.initialized)
-                    //            if (agent.isIncluded(objectsInVision)) {
-                    //                thingsSeen.add(agent);
-                    //                System.out.println("Seen");
-                    //            }
-                    //    }
-                    //}
+                    synchronized (inWorldAgents) {
+                        for (Creature agent : inWorldAgents) {
+                            if (agent.initialized)
+                                if (agent.isIncluded(objectsInVision)) {
+                                    thingsSeen.add(agent);
+                                }
+                        }
+                    }
 
                     synchronized (thingsInVision) {
                         thingsInVision.clear();
@@ -411,6 +410,7 @@ public class Creature extends Identifiable {
     private void execStop() {
         try {
             sim.callScriptFunction("stop_agent", agentScript);
+            rotate = false;
         } catch (CborException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -471,17 +471,24 @@ public class Creature extends Identifiable {
         return new WorldPoint(pos.get(0), pos.get(1));
     }
 
+    public double getX(){ return pos.get(0); }
+    public double getY(){ return pos.get(1); }
+
+    public double getX1() { return pos.get(0) - 0.2;}
+    public double getX2() { return pos.get(0) + 0.2;}
+    public double getY1() { return pos.get(1) - 0.2;}
+    public double getY2() { return pos.get(1) + 0.2;}
+
     public double getSpeed(){
         return vel;
     }
 
-    public List<Thing> getThingsInVision() {
+    public List<Identifiable> getThingsInVision() {
         return thingsInVision;
     }
 
     public String getColor() {
-        String[] split = color.name().split("_");
-        return split.length > 1 ? split[1] : color.name();
+        return color.getName();
     }
 
     public boolean isInOccupancyArea(double x, double y) {
@@ -496,6 +503,15 @@ public class Creature extends Identifiable {
 
     public Leaflet[] getLeaflets() {
         return leaflets;
+    }
+
+    public List<Leaflet> getActiveLeaflets(){
+        List<Leaflet> active = new ArrayList<>();
+        for (Leaflet l : leaflets){
+            if (!l.isDelivered())
+                active.add(l);
+        }
+        return active;
     }
 
     public void generateNewLeaflets() {
@@ -517,7 +533,7 @@ public class Creature extends Identifiable {
         //The visible object detected by the camera is the sub-object
         //with the agent mesh, not the invisible one containing the
         //agent's script, thus the +1
-        return handleList.contains(agentHandle-1);
+        return handleList.contains(agentHandle+1);
     }
 
     public void setNPC(boolean NPC) {
@@ -531,5 +547,13 @@ public class Creature extends Identifiable {
     public double calculateDistanceTo(Thing th){
         WorldPoint thPos = th.getCenterPosition();
         return thPos.distanceTo(getPosition());
+    }
+
+    public String getName() { return "Creature_" + getId();}
+
+    public int getScore() { return score;}
+
+    public int ifHasActiveLeaflet() {
+        return getActiveLeaflets().isEmpty() ? 0 : 1;
     }
 }

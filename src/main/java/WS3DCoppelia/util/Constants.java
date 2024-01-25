@@ -18,23 +18,25 @@ public class Constants {
     public static final double BRICK_HEIGTH =  0.5;
     
     public enum Color {
-        RED(Arrays.asList( 0.95,  0.25,  0.25)),
-        GREEN(Arrays.asList( 0.25,  0.95,  0.25)),
-        BLUE(Arrays.asList( 0.25,  0.25,  0.95)),
-        YELLOW(Arrays.asList( 0.95,  0.95,  0.25)),
-        MAGENTA(Arrays.asList( 0.95,  0.25,  0.95)),
-        WHITE(Arrays.asList( 0.95,  0.95,  0.95)),
-        ORANGE(Arrays.asList( 0.95,  0.65,  0.25)),
-        GREY(Arrays.asList( 0.5,  0.5,  0.5)),
-        BROWN(Arrays.asList( 0.6,  0.4,  0.25)),
-        AGENT_YELLOW(Arrays.asList( 1.0,  0.8,  0.25)),
-        AGENT_GREEN(Arrays.asList( 0.55,  0.8,  0.15)),
-        AGENT_MAGENTA(Arrays.asList( 0.4,  0.3,  0.57)),
-        AGENT_RED(Arrays.asList( 0.98,  0.25,  0.27));
+        RED(Arrays.asList( 0.95,  0.25,  0.25), "Red"),
+        GREEN(Arrays.asList( 0.25,  0.95,  0.25), "Green"),
+        BLUE(Arrays.asList( 0.25,  0.25,  0.95), "Blue"),
+        YELLOW(Arrays.asList( 0.95,  0.95,  0.25), "Yellow"),
+        MAGENTA(Arrays.asList( 0.95,  0.25,  0.95), "Magenta"),
+        WHITE(Arrays.asList( 0.95,  0.95,  0.95), "White"),
+        ORANGE(Arrays.asList( 0.95,  0.65,  0.25), "Orange"),
+        GREY(Arrays.asList( 0.5,  0.5,  0.5), "Grey"),
+        BROWN(Arrays.asList( 0.6,  0.4,  0.25), "Brown"),
+        AGENT_YELLOW(Arrays.asList( 1.0,  0.8,  0.25), "Yellow"),
+        AGENT_GREEN(Arrays.asList( 0.55,  0.8,  0.15), "Green"),
+        AGENT_MAGENTA(Arrays.asList( 0.4,  0.3,  0.57), "Magenta"),
+        AGENT_RED(Arrays.asList( 0.98,  0.25,  0.27), "Red");
 
         private final List<Double> rgb;
         private final List<Double> hls;
-        Color(List<Double> rgb){
+        private final String name;
+        Color(List<Double> rgb, String name){
+            this.name = name;
             this.rgb = rgb;
             //Code from https://github.com/tips4java/tips4java
             double r = rgb.get(0);
@@ -74,6 +76,7 @@ public class Constants {
         }
         public List<Double> rgb() { return rgb;}
         public List<Double> hls() { return hls;}
+        public String getName(){ return name;}
     }
     
     public static String BASE_SCRIPT = "#python\n"
@@ -227,29 +230,31 @@ public class Constants {
         public int shape();
         public Color color();
         public String typeName();
+        public int socketCategory();
     }
-
-
+    
     public enum FoodTypes implements ThingsType{
         /**
          * Perishable food. Red sphere.
          */
-        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.RED, 300, "P_Food"),
+        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.RED, 300, "P_Food", 21),
         /**
          * Non-perishable food. Brown sphere.
          */
-        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.ORANGE, 150, "NP_Food");
+        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.ORANGE, 150, "NP_Food", 22);
         
         private final int shape;
         private final Color color;
         private final String type_name;
         private final double energy;
-        
-        FoodTypes(int shape, Color color, double energy, String name){
+        private final int socketCategory;
+
+        FoodTypes(int shape, Color color, double energy, String name, int socketCategory){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
             this.energy = energy;
+            this.socketCategory = socketCategory();
         }
         
         @Override
@@ -259,6 +264,7 @@ public class Constants {
         @Override
         public String typeName() { return type_name; }
         public double energy() { return energy; }
+        public int socketCategory() { return socketCategory; }
     }
     
     public enum JewelTypes implements ThingsType{
@@ -285,6 +291,8 @@ public class Constants {
         public Color color() { return color; }
         @Override
         public String typeName() { return type_name; }
+        @Override
+        public int socketCategory() { return 3; }
     }
     
     public enum BrickTypes implements ThingsType{
@@ -314,6 +322,8 @@ public class Constants {
         public Color color() { return color; }
         @Override
         public String typeName() { return type_name; }
+        @Override
+        public int socketCategory() { return 1; }
     }
     
     public static int getPaymentColor(JewelTypes type){
@@ -334,4 +344,7 @@ public class Constants {
                 return 0;
         }
     }
+
+    public static final int PORT = 4011;
+    public static final String ERROR_CODE = "@@@";
 }

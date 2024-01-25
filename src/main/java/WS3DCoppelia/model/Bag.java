@@ -9,6 +9,9 @@ import WS3DCoppelia.util.Constants.ThingsType;
 import java.util.HashMap;
 import java.util.Map;
 
+import static WS3DCoppelia.util.Constants.FoodTypes.*;
+import static WS3DCoppelia.util.Constants.JewelTypes.*;
+
 /**
  * Models a bag used by the Agent to carry itens.
  * The bag model only keeps tracks of the amount of itens stored in it. The object instance
@@ -60,15 +63,49 @@ public class Bag {
         return content.getOrDefault(type, 0);
     }
 
+    public int getTotalNumberJewels(){
+        int total = 0;
+        for (Constants.JewelTypes type : Constants.JewelTypes.values()){
+            total += getTotalCountOf(type);
+        }
+        return total;
+    }
+
     public int getTotalNumberFood(){
         return getTotalNumberNPFood() + getTotalNumberPFood();
     }
 
     public int getTotalNumberPFood() {
-        return getTotalCountOf(Constants.FoodTypes.PFOOD);
+        return getTotalCountOf(PFOOD);
     }
 
     public int getTotalNumberNPFood() {
         return getTotalCountOf(Constants.FoodTypes.NPFOOD);
+    }
+
+    public StringBuffer getContenteDescription(){
+        StringBuffer ret = new StringBuffer("");
+        ret.append(" ");
+        ret.append(getTotalNumberFood());
+        ret.append(" ");
+        ret.append(getTotalNumberJewels());
+        ret.append(" ");
+        ret.append(getTotalCountOf(PFOOD));
+        ret.append(" ");
+        ret.append(getTotalCountOf(NPFOOD));
+        ret.append(" ");
+        ret.append(getTotalCountOf(RED_JEWEL));
+        ret.append(" ");
+        ret.append(getTotalCountOf(GREEN_JEWEL));
+        ret.append(" ");
+        ret.append(getTotalCountOf(BLUE_JEWEL));
+        ret.append(" ");
+        ret.append(getTotalCountOf(YELLOW_JEWEL));
+        ret.append(" ");
+        ret.append(getTotalCountOf(MAGENTA_JEWEL));
+        ret.append(" ");
+        ret.append(getTotalCountOf(WHITE_JEWEL));
+
+        return ret;
     }
 }

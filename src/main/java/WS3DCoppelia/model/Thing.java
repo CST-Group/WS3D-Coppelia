@@ -137,6 +137,13 @@ public class Thing extends Identifiable {
         return pos;
     }
 
+    public double getX(){
+        return pos.get(0);
+    }
+    public double getY(){
+        return pos.get(1);
+    }
+
     public WorldPoint getCenterPosition(){
         return new WorldPoint(pos.get(0), pos.get(1));
     }
@@ -221,6 +228,10 @@ public class Thing extends Identifiable {
         return color;
     }
 
+    public Constants.Color getColorType(){
+        return category.color();
+    }
+
     public int getShape(){
         return category.shape();
     }
@@ -244,4 +255,9 @@ public class Thing extends Identifiable {
     public String getName(){
         return category.typeName() + "_" + getId();
     }
+
+    public int getSocketCategory() {
+        return category.socketCategory();
+    }
+
 }

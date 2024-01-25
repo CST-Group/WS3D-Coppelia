@@ -31,10 +31,11 @@ public class WS3DCoppelia {
     
     private RemoteAPIClient client;
     private RemoteAPIObjects._sim sim;
-    private List<Creature> inWorldAgents = Collections.synchronizedList(new ArrayList());
+    private List<Creature> inWorldCreatures = Collections.synchronizedList(new ArrayList());
     private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
-    private double width = 5, heigth = 5;
+    private double width = 12, heigth = 12;
     private Long worldScript;
+    private boolean running = false;
 
     /**
      * A connection to CoppeliaSim is created and necessary model files are loaded.
@@ -103,11 +104,11 @@ public class WS3DCoppelia {
                 thg.run();
             }
         }
-        synchronized(inWorldAgents){
-            List<Creature> excludedAgents = inWorldAgents.stream().filter(t->t.removed).collect(Collectors.toList());
-            inWorldAgents.removeAll(excludedAgents);
-            for(Creature agt : inWorldAgents){
-                agt.run(inWorldThings, inWorldAgents, worldScript);
+        synchronized(inWorldCreatures){
+            List<Creature> excludedAgents = inWorldCreatures.stream().filter(t->t.removed).collect(Collectors.toList());
+            inWorldCreatures.removeAll(excludedAgents);
+            for(Creature agt : inWorldCreatures){
+                agt.run(inWorldThings, inWorldCreatures, worldScript);
             }
         }
     }
@@ -158,6 +159,8 @@ public class WS3DCoppelia {
         Timer t = new Timer();
         WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 100, 75);
+
+        running = true;
     }
 
     /**
@@ -185,8 +188,8 @@ public class WS3DCoppelia {
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
         
         Creature newAgent = new Creature(sim, x, y, width, heigth);
-        synchronized(inWorldAgents){
-            inWorldAgents.add(newAgent);
+        synchronized(inWorldCreatures){
+            inWorldCreatures.add(newAgent);
         }
         return newAgent;
     }
@@ -206,8 +209,8 @@ public class WS3DCoppelia {
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
         Creature newAgent = new Creature(sim, x, y, width, heigth, color);
-        synchronized(inWorldAgents){
-            inWorldAgents.add(newAgent);
+        synchronized(inWorldCreatures){
+            inWorldCreatures.add(newAgent);
         }
         return newAgent;
     }
@@ -219,8 +222,8 @@ public class WS3DCoppelia {
 
         Creature newAgent = new Creature(sim, x, y, width, heigth, color);
         newAgent.setNPC(true);
-        synchronized(inWorldAgents){
-            inWorldAgents.add(newAgent);
+        synchronized(inWorldCreatures){
+            inWorldCreatures.add(newAgent);
         }
         return newAgent;
     }
@@ -275,8 +278,8 @@ public class WS3DCoppelia {
                 if (thg.isInOccupancyArea(x, y)) return true;
             }
         }
-        synchronized(inWorldAgents){
-            for(Creature agt : inWorldAgents){
+        synchronized(inWorldCreatures){
+            for(Creature agt : inWorldCreatures){
                 if (agt.isInOccupancyArea(x, y)) return true;
             }
         }
@@ -291,5 +294,20 @@ public class WS3DCoppelia {
     public double getWorldHeigth(){
         return heigth;
     }
-    
+
+    public boolean isRunning(){ return running; }
+
+    public List<Creature> getAllCreatures(){
+        return inWorldCreatures;
+    }
+
+    public void setWidth(double width){
+        if (!running)
+            this.width = width;
+    }
+
+    public void setHeigth(double heigth){
+        if (!running)
+            this.heigth = heigth;
+    }
 }
