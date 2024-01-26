@@ -79,8 +79,7 @@ public class Thing extends Identifiable {
             Long floorHandle =  sim.getObject("/Floor");
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
             Object[] response = sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
-            System.out.println(response.getClass());
-            thingHandle = ((ArrayList<Long>) response[0]).get(0);
+            thingHandle = (Long) response[0];
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -138,10 +137,10 @@ public class Thing extends Identifiable {
     }
 
     public double getX(){
-        return pos.get(0);
+        return pos.get(0)*100;
     }
     public double getY(){
-        return pos.get(1);
+        return pos.get(1)*100;
     }
 
     public WorldPoint getCenterPosition(){
@@ -149,19 +148,19 @@ public class Thing extends Identifiable {
     }
 
     public double getX1(){
-        return pos.get(0) - width / 2;
+        return (pos.get(0) - width / 2)*100;
     }
 
     public double getX2(){
-        return pos.get(0) + width / 2;
+        return (pos.get(0) + width / 2)*100;
     }
 
     public double getY1(){
-        return pos.get(1) - width / 2;
+        return (pos.get(1) - width / 2)*100;
     }
 
     public double getY2(){
-        return pos.get(1) + width / 2;
+        return (pos.get(1) + width / 2)*100;
     }
 
     public ThingsType thingType(){

@@ -50,7 +50,7 @@ public class InnerSense extends Codelet {
 	
 	public void proc() {
             //env.updateState();
-            cis.position = creature.getPosition();
+            cis.position = creature.getPos();
             cis.pitch = creature.getPitch();
             cis.fuel = creature.getFuel();
 	}

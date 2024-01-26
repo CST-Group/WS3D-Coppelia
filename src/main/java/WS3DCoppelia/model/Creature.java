@@ -198,8 +198,6 @@ public class Creature extends Identifiable {
                 Logger.getLogger(Creature.class.getName()).log(Level.WARNING, "Agent missed an update step");
             }
 
-            if (rotate)
-                execRotate();
         }
 
     }
@@ -227,8 +225,11 @@ public class Creature extends Identifiable {
                                 this.execEatIt(thing);
                         break;
                     case "rotate":
-                        this.execRotate();
-                        rotate = true;
+                        System.out.println("Rot1");
+                        if (rotate) {
+                            this.execRotate(((boolean) commandQueue.get(command)) ? 1 : 0);
+                            executed.remove(command);
+                        }
                         break;
                     case "sackIt":
                         if (commandQueue.get(command) instanceof Integer)
@@ -307,8 +308,16 @@ public class Creature extends Identifiable {
      */
     public void rotate() {
         synchronized (commandQueue) {
-            commandQueue.put("rotate", "");
+            commandQueue.put("rotate", true);
         }
+        rotate = true;
+    }
+
+    public void rotate(boolean clockwise) {
+        synchronized (commandQueue) {
+            commandQueue.put("rotate", clockwise);
+        }
+        rotate = true;
     }
 
     /**
@@ -353,7 +362,6 @@ public class Creature extends Identifiable {
      */
     public void deliverLeaflet(int leafletId) {
         synchronized (commandQueue) {
-            System.out.println(String.format("Deliver leaflet %d", leafletId));
             commandQueue.put("deliver", leafletId);
         }
     }
@@ -396,9 +404,9 @@ public class Creature extends Identifiable {
         }
     }
 
-    private void execRotate() {
+    private void execRotate(int dir) {
         try {
-            sim.callScriptFunction("rotate_agent", agentScript);
+            sim.callScriptFunction("rotate_agent", agentScript, dir);
         } catch (CborException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -445,7 +453,6 @@ public class Creature extends Identifiable {
         }
 
         if (deliverable) {
-            System.out.println("Delivering");
             score += leaflets[pos].getPayment();
             leaflets[pos].setDelivered(true);
             for (Entry<Constants.JewelTypes, Integer> requirement : leaflets[pos].getRequirements().entrySet()) {
@@ -467,17 +474,18 @@ public class Creature extends Identifiable {
     /**
      * @return A list containing two double values. First is the x coordinate and second the y coordinate of agent's position
      */
+    public List<Double> getPos() { return pos;}
     public WorldPoint getPosition() {
         return new WorldPoint(pos.get(0), pos.get(1));
     }
 
-    public double getX(){ return pos.get(0); }
-    public double getY(){ return pos.get(1); }
+    public double getX(){ return pos.get(0)*100; }
+    public double getY(){ return pos.get(1)*100; }
 
-    public double getX1() { return pos.get(0) - 0.2;}
-    public double getX2() { return pos.get(0) + 0.2;}
-    public double getY1() { return pos.get(1) - 0.2;}
-    public double getY2() { return pos.get(1) + 0.2;}
+    public double getX1() { return (pos.get(0) - 0.2)*100;}
+    public double getX2() { return (pos.get(0) + 0.2)*100;}
+    public double getY1() { return (pos.get(1) - 0.2)*100;}
+    public double getY2() { return (pos.get(1) + 0.2)*100;}
 
     public double getSpeed(){
         return vel;

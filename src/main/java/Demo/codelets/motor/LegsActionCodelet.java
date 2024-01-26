@@ -90,7 +90,7 @@ public class LegsActionCodelet extends Codelet{
 					    if (!comm.equals(previousLegsAction))
                                                 log.info("Sending move command to agent: ["+targetx+","+targety+"]");
                                             try {
-                                                creature.moveTo((float) targetx, (float) targety);
+                                                creature.moveTo(1.0, targetx, targety);
                                             } catch(Exception e) {
                                                 e.printStackTrace();
                                             }

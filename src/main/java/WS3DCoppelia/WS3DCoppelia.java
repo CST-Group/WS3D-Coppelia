@@ -10,12 +10,7 @@ import WS3DCoppelia.util.NativeUtils;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -31,8 +26,9 @@ public class WS3DCoppelia {
     
     private RemoteAPIClient client;
     private RemoteAPIObjects._sim sim;
-    private List<Creature> inWorldCreatures = Collections.synchronizedList(new ArrayList());
-    private List<Thing> inWorldThings = Collections.synchronizedList(new ArrayList());
+    private Timer t;
+    private List<Creature> inWorldCreatures = Collections.synchronizedList(new LinkedList<>());
+    private List<Thing> inWorldThings = Collections.synchronizedList(new LinkedList<>());
     private double width = 12, heigth = 12;
     private Long worldScript;
     private boolean running = false;
@@ -95,21 +91,34 @@ public class WS3DCoppelia {
     }
     
     public void updateState(){
-        synchronized(inWorldThings){
-            List<Thing> excludedThings = inWorldThings.stream().filter(t->t.removed).collect(Collectors.toList());
-            List<Thing> notInitialized = inWorldThings.stream().filter(t->!t.isInitialized()).collect(Collectors.toList());
-            inWorldThings.removeAll(excludedThings);
-            if(notInitialized.size() > 2) Thing.bulkInit(notInitialized, sim);
-            for(Thing thg : inWorldThings){
-                thg.run();
+        try {
+            synchronized (inWorldThings) {
+                List<Thing> excludedThings = inWorldThings.stream().filter(t -> t.removed).collect(Collectors.toList());
+                List<Thing> notInitialized = inWorldThings.stream().filter(t -> !t.isInitialized()).collect(Collectors.toList());
+                inWorldThings.removeAll(excludedThings);
+                if (notInitialized.size() > 2) Thing.bulkInit(notInitialized, sim);
+                for (Thing thg : inWorldThings) {
+                    thg.run();
+                }
+            }
+            synchronized (inWorldCreatures) {
+                List<Creature> excludedAgents = inWorldCreatures.stream().filter(t -> t.removed).collect(Collectors.toList());
+                inWorldCreatures.removeAll(excludedAgents);
+                for (Creature agt : inWorldCreatures) {
+                    agt.run(inWorldThings, inWorldCreatures, worldScript);
+                }
             }
         }
-        synchronized(inWorldCreatures){
-            List<Creature> excludedAgents = inWorldCreatures.stream().filter(t->t.removed).collect(Collectors.toList());
-            inWorldCreatures.removeAll(excludedAgents);
-            for(Creature agt : inWorldCreatures){
-                agt.run(inWorldThings, inWorldCreatures, worldScript);
+        catch (RuntimeException e){
+            System.out.println("Simulation crashed. Stopping simulation");
+            inWorldCreatures = Collections.synchronizedList(new LinkedList<>());
+            inWorldThings = Collections.synchronizedList(new LinkedList<>());
+            try {
+                sim.stopSimulation();
+            } catch (CborException ex) {
+                System.out.println("Already Stopped");
             }
+            t.cancel();
         }
     }
 
@@ -155,9 +164,10 @@ public class WS3DCoppelia {
         updateState();
         startTime = sim.getSimulationTime();
         while(sim.getSimulationTime() - startTime < 2){}
-        
-        Timer t = new Timer();
-        WS3DCoppelia.mainTimerTask tt = new WS3DCoppelia.mainTimerTask(this);
+
+        t = new Timer();
+        WS3DCoppelia.mainTimerTask tt;
+        tt = new mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 100, 75);
 
         running = true;
@@ -301,13 +311,15 @@ public class WS3DCoppelia {
         return inWorldCreatures;
     }
 
+    public List<Thing> getAllThings() { return inWorldThings;}
+
     public void setWidth(double width){
         if (!running)
-            this.width = width;
+            this.width = width / 100.0;
     }
 
     public void setHeigth(double heigth){
         if (!running)
-            this.heigth = heigth;
+            this.heigth = heigth / 100.0;
     }
 }

@@ -51,7 +51,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'Demo.App'
+    mainClass = 'WS3DCoppelia.WS3DCoppeliaSocket'
 }
 
 tasks.named('test') {

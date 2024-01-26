@@ -26,7 +26,8 @@ public class Leaflet extends Identifiable {
     private boolean delivered = false;
     
     private Map<JewelTypes, Integer> requirements = new HashMap();
-    
+    private Map<JewelTypes, Integer> collected = new HashMap();
+
     public Leaflet(){
         Random rng = new Random();
         
@@ -40,7 +41,8 @@ public class Leaflet extends Identifiable {
             int num = rng.nextInt(Constants.MAX_NUMBER_ITEMS_PER_COLOR - 1) + 1;
             
             requirements.put(JewelTypes.values()[list.get(i)], num);
-            
+            collected.put(JewelTypes.values()[list.get(i)], 0);
+
             payment += Constants.getPaymentColor(JewelTypes.values()[list.get(i)]);
         }
     }
@@ -72,8 +74,9 @@ public class Leaflet extends Identifiable {
     public void updateProgress(Bag bag){
         boolean check = true;
         for(JewelTypes required : requirements.keySet()){
-            int collected = bag.getTotalCountOf(required);
-            if(collected < requirements.get(required))
+            int collectedNum = bag.getTotalCountOf(required);
+            collected.put(required, collectedNum);
+            if(collectedNum < requirements.get(required))
                 check = false;
         }
         completed = check;
@@ -89,6 +92,7 @@ public class Leaflet extends Identifiable {
             String str = type.color().getName();
             ret = ret + str + " ";
             ret = ret + (requirements.get(type)).toString() + " ";
+            ret = ret + (collected.get(type)).toString() + " ";
         }
 
         ret  = ret+payment+" "+completed+" ";

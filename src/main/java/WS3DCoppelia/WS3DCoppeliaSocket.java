@@ -38,6 +38,10 @@ import WS3DCoppelia.util.*;
 import WS3DCoppelia.model.*;
 import co.nstant.in.cbor.CborException;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
+
+import static WS3DCoppelia.util.Constants.FoodTypes.NPFOOD;
+import static WS3DCoppelia.util.Constants.FoodTypes.PFOOD;
 
 /**
  * Main class of the server (WorldServer 3D - WS3D). This class defines the
@@ -53,8 +57,6 @@ public class WS3DCoppeliaSocket {
 
     String version = "1.0";
     private WS3DCoppelia mySim;
-    public WorldFrame i;
-    public SimulationFrame sf;
     StringBuffer outToClient;
     List<ServerThread> clientsConnected;
     Logger log;
@@ -67,12 +69,9 @@ public class WS3DCoppeliaSocket {
         Logger.getLogger("util").setLevel(Level.WARNING);
         Logger.getLogger("model").setLevel(Level.WARNING);
         Logger.getLogger("motorcontrol").setLevel(Level.WARNING);
-        NativeUtils.setLibraryPath(".");
-        NativeUtils.prepareNativeLibs();
+        //NativeUtils.setLibraryPath(".");
         //Logger.getLogger("com.jme").setLevel(Level.ALL);
         mySim = new WS3DCoppelia();
-        i = new WorldFrame();
-        sf = new SimulationFrame(this);
         clientsConnected = new ArrayList<ServerThread>();
         try {
             ServerSocket ss = new ServerSocket(Constants.PORT);
@@ -205,10 +204,9 @@ public class WS3DCoppeliaSocket {
             ProcessSetLeaflet(st);
         } else if (command.equalsIgnoreCase(("deliver"))) {
             ProcessDeliverLeaflet(st);
-        } else if (command.equalsIgnoreCase("newDeliverySpot")){
+        } else if (command.equalsIgnoreCase("newDeliverySpot")) {
             ProcessNewDeliverySpot(st);
-        }
-        else if (command.equalsIgnoreCase("help")) {
+        } else if (command.equalsIgnoreCase("help")) {
             ProcessHelp();
         } else if (command.equalsIgnoreCase("drop")) {
             ProcessDrop(st);
@@ -332,7 +330,7 @@ public class WS3DCoppeliaSocket {
      */
     void ProcessGetEnvironment() {
         //getOutBuffer().append("" + i.ep.getPreferredSize().width + " " + i.ep.getPreferredSize().height + "\r\n");
-        getOutBuffer().append("" + mySim.getWorldWidth() + " " + mySim.getWorldHeigth() + "\r\n");
+        getOutBuffer().append("" + mySim.getWorldWidth()*100 + " " + mySim.getWorldHeigth()*100 + "\r\n");
     }
 
     /**
@@ -351,7 +349,7 @@ public class WS3DCoppeliaSocket {
      * Command: "getcreatcoords"
      *
      * @param st the creature index within the environment (NOT the actual ID).
-     * Please see comment "NOTE" above.
+     *           Please see comment "NOTE" above.
      */
     void ProcessGetCreatureCoords(StringTokenizer st) {
         Creature c = getCreatureFromID(st);
@@ -361,7 +359,8 @@ public class WS3DCoppeliaSocket {
     }
 
 
-    void ProcessNewDeliverySpot(StringTokenizer st){
+    void ProcessNewDeliverySpot(StringTokenizer st) {
+        /*
         String s;
         int type;
         double x, y;
@@ -396,6 +395,8 @@ public class WS3DCoppeliaSocket {
         } else {
             getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
         }
+         */
+            getOutBuffer().append("Not implemented");
 
     }
 
@@ -403,7 +404,7 @@ public class WS3DCoppeliaSocket {
      * Command: "getcreatinfo" Returns the speed and fuel values
      *
      * @param st the creature index within the environment (NOT the actual ID).
-     * Please see comment "NOTE" above.
+     *           Please see comment "NOTE" above.
      */
     void ProcessGetCreatureInfo(StringTokenizer st) {
         Creature c = getCreatureFromID(st);
@@ -419,7 +420,7 @@ public class WS3DCoppeliaSocket {
      * creature's bag.
      *
      * @param st the creature index within the environment (NOT the actual ID).
-     * Please see comment "NOTE" above.
+     *           Please see comment "NOTE" above.
      */
     void ProcessGetSackContent(StringTokenizer st) {
         Creature c = getCreatureFromID(st);
@@ -433,7 +434,7 @@ public class WS3DCoppeliaSocket {
      * Command: "closest"
      *
      * @param st the creature index within the environment (NOT the actual ID).
-     * Please see comment "NOTE" above.
+     *           Please see comment "NOTE" above.
      */
     void ProcessClosest(StringTokenizer st) {
         /*
@@ -484,7 +485,7 @@ public class WS3DCoppeliaSocket {
      * Command: "getvs". Lists the content of the creature visual system
      *
      * @param st the creature index within the environment (NOT the actual ID).
-     * Please see comment "NOTE" above.
+     *           Please see comment "NOTE" above.
      * @return content of the creature's camera. Format: "numberOfItems ||
      * Thing1 || Thing2 ... Thing?: ThingName category ifIsOccluded X1 X2 Y1 Y2
      * Pitch hardness energy shininess color || ... Example: 2 ||
@@ -512,7 +513,7 @@ public class WS3DCoppeliaSocket {
         while (iter.hasNext()) {
             Identifiable nextO = iter.next();
             if (nextO instanceof Thing) {
-                Thing o = (Thing) iter.next();
+                Thing o = (Thing) nextO;
                 vs.append(" || ");
                 vs.append(o.getName());
                 vs.append(" ");
@@ -543,7 +544,7 @@ public class WS3DCoppeliaSocket {
                 vs.append(o.getY());//center of mass
             }
             if (nextO instanceof Creature) {
-                Creature o = (Creature) iter.next();
+                Creature o = (Creature) nextO;
                 vs.append(" || ");
                 vs.append(o.getName());
                 vs.append(" ");
@@ -592,18 +593,18 @@ public class WS3DCoppeliaSocket {
      * Returns the affordances of a Thing.
      *
      * @param st refers to a ThingID. Example: Brick_1364939987440
-     *
-     * The server respond with the list of affordances code. Codes:
-     * Affordance__VIEWABLE = 30; Affordance__HIDEABLE = 31;
-     * Affordance__UNHIDEABLE = 32; Affordance__GRASPABLE = 33;
-     * Affordance__EATABLE = 34; Affordance__PUTINBAGABLE = 35;//sth that can be
-     * put in a bag; Affordance__OPENABLE = 36; //sth that can be opened (eg. a
-     * cage); Affordance__CLOSEABLE = 37;//sth than be closed (eg. a cage);
-     * Affordance__INSERTABLE = 38;//sth than can contain another thing (which
-     * had been inserted into this sth)[eg. a container];
-     * Affordance__REMOVEFROMABLE = 39;//sth from whose inside another thing is
-     * removed (eg. a container) Example: 30 31 32 Meaning: Affordance__VIEWABLE
-     * Affordance__HIDEABLE Affordance__UNHIDEABLE
+     *           <p>
+     *           The server respond with the list of affordances code. Codes:
+     *           Affordance__VIEWABLE = 30; Affordance__HIDEABLE = 31;
+     *           Affordance__UNHIDEABLE = 32; Affordance__GRASPABLE = 33;
+     *           Affordance__EATABLE = 34; Affordance__PUTINBAGABLE = 35;//sth that can be
+     *           put in a bag; Affordance__OPENABLE = 36; //sth that can be opened (eg. a
+     *           cage); Affordance__CLOSEABLE = 37;//sth than be closed (eg. a cage);
+     *           Affordance__INSERTABLE = 38;//sth than can contain another thing (which
+     *           had been inserted into this sth)[eg. a container];
+     *           Affordance__REMOVEFROMABLE = 39;//sth from whose inside another thing is
+     *           removed (eg. a container) Example: 30 31 32 Meaning: Affordance__VIEWABLE
+     *           Affordance__HIDEABLE Affordance__UNHIDEABLE
      */
     synchronized void ProcessGetAffordances(StringTokenizer st) {
         getOutBuffer().append(Constants.ERROR_CODE + " Not Implemented.\r\n");
@@ -621,8 +622,23 @@ public class WS3DCoppeliaSocket {
         String dateFormat = "HH:mm:ss:SS";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         try {
-            Creature c = getCreatureFromID(st);
-            if (c == null) return;
+            int creatID;
+            String cID;
+
+            if (st.hasMoreTokens()) {
+                cID = st.nextToken();
+                creatID = Integer.parseInt(cID.split("_")[1]);//returns -1 if none exists
+                //creatID = Integer.parseInt(cID);
+            } else {
+                getOutBuffer().append(Constants.ERROR_CODE + " Creature does not exist.");
+                return;
+            }
+
+            Creature c = mySim.getAllCreatures().stream().filter(e->e.getId() == creatID).findFirst().orElseGet(null);
+            if (c == null) {
+                getOutBuffer().append(Constants.ERROR_CODE + " Creature does not exist.");
+                return;
+            }
 
             //Leaflet pool:
             StringBuffer lp = new StringBuffer("");
@@ -646,7 +662,7 @@ public class WS3DCoppeliaSocket {
             vs = getVisualContent(c);
 
             //Creature info:
-            getOutBuffer().append(" "+
+            getOutBuffer().append(" " +
                     c.getName() + " "
                     + mySim.getAllCreatures().indexOf(c) + " "
                     + c.getX() + " "
@@ -664,16 +680,15 @@ public class WS3DCoppeliaSocket {
                     + c.getY1() + " "
                     + c.getX2() + " "
                     + c.getY2() + " "
-                    + //color of creature in client frame
-                    c.getColor() + " "
-                    + "NONE " //Not used
+                    + c.getColor() + " "
+                    + "{\"ACTION\":\"NONE\",\"THING_DATA=\":{}} " //Not used
                     + "0 "
                     + c.ifHasActiveLeaflet() + " "
                     + lp //leaflet pool
                     + //content of visual system
                     vs + "\r\n");
 
-            if (!vs.toString().equals(" 0"))log.info(">>>>>>>>Server sending: "+vs+"  at "+sdf.format(nowD));
+            if (!vs.toString().equals(" 0")) log.info(">>>>>>>>Server sending: " + vs + "  at " + sdf.format(nowD));
             return;
         } catch (Exception e) {
             e.printStackTrace();
@@ -682,8 +697,8 @@ public class WS3DCoppeliaSocket {
 
     void ProcessGetSimulPars() {
 
-        getOutBuffer().append(mySim.getWorldWidth() + " "
-                + mySim.getWorldHeigth() + " "
+        getOutBuffer().append((int) mySim.getWorldWidth() * 100 + " "
+                + (int) mySim.getWorldHeigth() * 100 + " "
                 + //delivery spot:    Not Implemented
                 "0 " + //x
                 "0" //y
@@ -779,7 +794,7 @@ public class WS3DCoppeliaSocket {
                     return;
                 }
 
-                double vel = (Double.parseDouble(vr) + Double.parseDouble(vl) ) /2;
+                double vel = (Double.parseDouble(vr) + Double.parseDouble(vl)) / 2;
                 c.moveTo(vel, Double.parseDouble(xf), Double.parseDouble(yf));
 
                 getOutBuffer().append("" + c.getSpeed() + " " + c.getPitch() + "\r\n");
@@ -794,7 +809,7 @@ public class WS3DCoppeliaSocket {
     /**
      * This command is often used on clients that autonomously control the
      * creature.
-     *
+     * <p>
      * * Format: setAngle creatureID Vr Vl W
      *
      * @param st
@@ -826,8 +841,10 @@ public class WS3DCoppeliaSocket {
                     return;
                 }
 
-                if (Double.parseDouble(vr) != Double.parseDouble(vl))
-                    c.rotate();
+                if (Double.parseDouble(vr) > Double.parseDouble(vl))
+                    c.rotate(false);
+                else if (Double.parseDouble(vr) < Double.parseDouble(vl))
+                    c.rotate(true);
                 else
                     c.stop();
 
@@ -846,28 +863,28 @@ public class WS3DCoppeliaSocket {
         Creature c = getCreatureFromID(st);
         if (c == null) return;
 
-            try {
-                    String thingName = "";
+        try {
+            String thingName = "";
 
-                    if (st.hasMoreTokens()) {
-                        thingName = st.nextToken();
-                    } else {
-                        getOutBuffer().append(Constants.ERROR_CODE + " Thing to grasp is missing");
-                        return;
-                    }
-
-                    String[] thingId = thingName.split("_");
-                    if (thingId.length > 1) {
-                        c.putInSack(Integer.parseInt(thingId[1]));
-                    }
-                    getOutBuffer().append("" + thingName + "\r\n");
-
-
-            } //end try
-            catch (Exception e) {
-                e.printStackTrace();
+            if (st.hasMoreTokens()) {
+                thingName = st.nextToken();
+            } else {
+                getOutBuffer().append(Constants.ERROR_CODE + " Thing to grasp is missing");
+                return;
             }
+
+            String[] thingId = thingName.split("_");
+            if (thingId.length > 1) {
+                c.putInSack(Integer.parseInt(thingId[1]));
+            }
+            getOutBuffer().append("" + thingName + "\r\n");
+
+
+        } //end try
+        catch (Exception e) {
+            e.printStackTrace();
         }
+    }
 
     void ProcessEatIt(StringTokenizer st) {
         Creature c = getCreatureFromID(st);
@@ -889,7 +906,6 @@ public class WS3DCoppeliaSocket {
                 c.eatIt(Integer.parseInt(thingId[1]));
             }
             getOutBuffer().append("" + thingName + "\r\n");
-
 
 
         } //end try
@@ -940,7 +956,7 @@ public class WS3DCoppeliaSocket {
             e.printStackTrace();
         }
          */
-         getOutBuffer().append("Not Implemented \r\n");
+        getOutBuffer().append("Not Implemented \r\n");
 
     }
 
@@ -988,6 +1004,7 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessDrop(StringTokenizer st) {
+        /*
         int creatID = -1;
         String cID;
         if (st.hasMoreTokens()) {
@@ -1028,75 +1045,56 @@ public class WS3DCoppeliaSocket {
         catch (Exception e) {
             e.printStackTrace();
         }
+         */
+        // TODO
+        getOutBuffer().append("Not Implemented \r\n");
     }
 
     /**
      * Angle of the turn is determined by the wheel speeds Vr (right wheel) and
      * Vl (left wheel).
-     *
+     * <p>
      * Format: setTurn creatureID speed Vr Vl
      *
      * @param st
      */
     void ProcessSetDifferentialStatus3DT(StringTokenizer st) {
-        int creatID = -1;
-        String cID;
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID + " \r\n");
-        Creature c = i.ep.e.getCpool().get(creatID);
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
         try {
-            synchronized (c) {
-                String vr = "", vl = "", speed = "";
+            String vr = "", vl = "", speed = "";
 
-                if (st.hasMoreTokens()) {
-                    speed = st.nextToken();
-                } else {
-                    getOutBuffer().append(Constants.ERROR_CODE + " Creature speed is missing");
-                    return;
-                }
-                if (st.hasMoreTokens()) {
-                    vr = st.nextToken();
-                } else {
-                    getOutBuffer().append(Constants.ERROR_CODE + " Right wheel velocity is missing");
-                    return;
-                }
-                if (st.hasMoreTokens()) {
-                    vl = st.nextToken();
-                } else {
-                    getOutBuffer().append(Constants.ERROR_CODE + " Left wheel velocity is missing");
-                    return;
-                }
+            if (st.hasMoreTokens()) {
+                speed = st.nextToken();
+            } else {
+                getOutBuffer().append(Constants.ERROR_CODE + " Creature speed is missing");
+                return;
+            }
+            if (st.hasMoreTokens()) {
+                vr = st.nextToken();
+            } else {
+                getOutBuffer().append(Constants.ERROR_CODE + " Right wheel velocity is missing");
+                return;
+            }
+            if (st.hasMoreTokens()) {
+                vl = st.nextToken();
+            } else {
+                getOutBuffer().append(Constants.ERROR_CODE + " Left wheel velocity is missing");
+                return;
+            }
 
-                c.setVright(Double.parseDouble(vr));
-                c.setVleft(Double.parseDouble(vl));
+            if (Double.parseDouble(vr) > Double.parseDouble(vl))
+                c.rotate(false);
+            else if (Double.parseDouble(vr) < Double.parseDouble(vl))
+                c.rotate(true);
+            else
+                c.stop();
 
-                if (c.getMotorSys() == 2) {
-                    ((RobotCreature) c).setSpeedExternally();
-                }
-                c.setSpeed(Double.parseDouble(speed));
-
-                double turn = (c.getVleft() - c.getVright()) / c.getSize();
-                double currW = Math.toRadians(c.getPitch());
-                double ang = turn+currW;
-                c.setW(ang % (2*Constants.M_PI));
-//                    System.out.println("$$$$$$$$$$$$$$ turn::getW= "+c.getW());
-                c.setPitch(Math.toDegrees(c.getW()));
-
-                i.ep.repaint();
-
-                log.info("Angle of turn according to Vr and Vl: " + "in radian: " + turn + " in degree: " + Math.toDegrees(turn));
-                log.info("Pitch changed to (in degrees)= "+c.getPitch());
-                getOutBuffer().append("" + c.getSpeed() + " " + c.getW() + c.getPitch() + "\r\n");
+            log.info("Pitch changed to (in degrees)= " + c.getPitch());
+            getOutBuffer().append("" + c.getSpeed() + " " + c.getPitch() + "\r\n");
 
 
-            } //end syncronized
         } //end try
         catch (Exception e) {
             e.printStackTrace();
@@ -1105,6 +1103,10 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessSetLeaflet(StringTokenizer st) {
+        //Ignored because on WS3DProxy is only used for random leaflets generation when a new
+        //Creature is created. This already occurs when a Creature is initialized. The output
+        //is also ignored;
+        /*
         int jewel1 = 0;
         int jewel2 = 1;
         int jewel3 = 2;
@@ -1115,8 +1117,8 @@ public class WS3DCoppeliaSocket {
         List<Leaflet> leafletList = new ArrayList<Leaflet>();
 
         if (!st.hasMoreTokens()) {
-            for (int it = 0; it <= (Constants.MAX_NUMBER_OF_LEAFLETS - 1); it++) {
-                leaflet = generateRandomLeaflet();
+            for (int it = 0; it < (Constants.NUM_LEAFLET_PER_AGENTS); it++) {
+                leaflet = new Leaflet();
                 leafletList.add(leaflet);
                 waitAMilli();
             }
@@ -1195,21 +1197,9 @@ public class WS3DCoppeliaSocket {
             }
         }
 
+         */
     }
 
-    Leaflet generateRandomLeaflet() {
-        LeafletGenerator lg = new LeafletGenerator();
-
-        return lg.getLeaflet();
-
-    }
-
-    Leaflet generateRandomLeaflet(Long owner) {
-        LeafletGenerator lg = new LeafletGenerator(owner);
-
-        return lg.getLeaflet();
-
-    }
 
     void ProcessHelp() {
         log.info("====  ProcessHelp() ===");
@@ -1297,7 +1287,7 @@ public class WS3DCoppeliaSocket {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        Main m = new Main();
+        WS3DCoppeliaSocket m = new WS3DCoppeliaSocket();
     }
 
     void ProcessNewCreature(StringTokenizer st) {
@@ -1319,12 +1309,9 @@ public class WS3DCoppeliaSocket {
                         if (s.equalsIgnoreCase("1")) color = true;
                     }
 
-                    ThingCreator tc = new ThingCreator(i.ep.e);
-                    RobotCreature c = tc.createCreature(color, x, y, pitch);
+                    Creature c = mySim.createAgent(x/100.0, y/100.0);
 
-                    this.sf.gameState.ThingsRN.updateRenderState();
-
-                    getOutBuffer().append("" + i.ep.e.getCpool().indexOf(c) + " " + c.getMyName() + " " + c.getX() + " " + c.getY() + " " + c.getPitch() + "\r\n");
+                    getOutBuffer().append("" + mySim.getAllCreatures().indexOf(c) + " " + c.getName() + " " + c.getX() + " " + c.getY() + " " + c.getPitch() + "\r\n");
 
                 } else {
                     getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
@@ -1350,12 +1337,11 @@ public class WS3DCoppeliaSocket {
                 if (st.hasMoreTokens()) {
                     s = st.nextToken();
                     pitch = Double.parseDouble(s);
-                    for (Creature c : i.ep.e.getCpool()) {
+                    for (Creature c : mySim.getAllCreatures()) {
                         if ((c.getX() == x) && (c.getY() == y)) {
-                            index = i.ep.e.getCpool().indexOf(c);
+                            index = mySim.getAllCreatures().indexOf(c);
                             ID = "" + index;
-                            i.ep.e.getCpool().get(index).setPitch(pitch);
-                            nameID = c.getMyName();
+                            nameID = c.getName();
                             msg = ID + " " + nameID;
                             break;
                         }
@@ -1375,6 +1361,7 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessNewWaypoint(StringTokenizer st) {
+        /*
         String s;
         double x, y;
         if (st.hasMoreTokens()) {
@@ -1397,9 +1384,12 @@ public class WS3DCoppeliaSocket {
         } else {
             getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
         }
+         */
+        getOutBuffer().append("Not implemented");
     }
 
     void ProcessDeleteWaypoint(StringTokenizer st) {
+        /*
         String s;
         double x, y;
         if (st.hasMoreTokens()) {
@@ -1422,6 +1412,8 @@ public class WS3DCoppeliaSocket {
         } else {
             getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
         }
+        */
+        getOutBuffer().append("Not implemented");
     }
 
     //deleteth <0 or 1> ThingIndex
@@ -1435,16 +1427,19 @@ public class WS3DCoppeliaSocket {
             if (type == 0) { //object
                 if (st.hasMoreTokens()) {
                     thingID = Integer.parseInt(st.nextToken());
-                    if (i.ep.e.getOpool().size() > 0) {
-                        if (thingID < 0 || thingID > i.ep.e.getOpool().size() - 1) {
+                    if (mySim.getAllThings().size() > 0) {
+                        if (thingID < 0 || thingID > mySim.getAllThings().size() - 1) {
                             getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
                             return;
                         }
-                        Thing th = i.ep.e.getOpool().get(thingID);
-                        if ((th != null) && (th.category != Constants.categoryCREATURE)) {
-                            th.removeRememberMeIcon(i.ep.e);
-                            i.ep.e.removeThing(th);
-                            getOutBuffer().append("" + th.getMyName() + "\r\n");
+                        Thing th = mySim.getAllThings().get(thingID);
+                        if ((th != null)) {
+                            try {
+                                th.remove();
+                                getOutBuffer().append("" + th.getName() + "\r\n");
+                            } catch (CborException e) {
+                                getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
+                            }
                         }
                     } else {
                         getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
@@ -1457,21 +1452,16 @@ public class WS3DCoppeliaSocket {
             } else if (type == 1) { //Creature
                 if (st.hasMoreTokens()) {
                     thingID = Integer.parseInt(st.nextToken());
-                    if (i.ep.e.getCpool().size() > 0) {
-                        if (thingID < 0 || thingID > i.ep.e.getCpool().size() - 1) {
+                    if (mySim.getAllCreatures().size() > 0) {
+                        if (thingID < 0 || thingID > mySim.getAllCreatures().size() - 1) {
                             getOutBuffer().append(Constants.ERROR_CODE + " Creature does not exist. Try again!");
                             return;
                         }
 
-                        Thing th = i.ep.e.getCpool().get(thingID);
-                        if (th.category == Constants.categoryCREATURE) {
-                            int dead = i.ep.e.getCpool().indexOf(th);
+                        Creature th = mySim.getAllCreatures().get(thingID);
 
-                            i.ep.scoreTabList.clear();
-                            i.ep.e.removeCreature((Creature) th);
-                            i.ep.e.updateCameras(dead);
-                            getOutBuffer().append("" + th.getMyName() + "\r\n");
-                        }
+                        getOutBuffer().append("" + th.getName() + "\r\n");
+                        th.setRemove(true);
                     } else {
                         getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
                         return;
@@ -1492,6 +1482,7 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessNewCage(StringTokenizer st) {
+        /*
         String s;
         double x, y;
         if (st.hasMoreTokens()) {
@@ -1513,6 +1504,8 @@ public class WS3DCoppeliaSocket {
         } else {
             getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
         }
+         */
+        getOutBuffer().append("Not implemented");
     }
 
     void ProcessNewFood(StringTokenizer st) {
@@ -1534,19 +1527,17 @@ public class WS3DCoppeliaSocket {
                 s = st.nextToken();
                 y = Double.parseDouble(s);
 
-                ThingCreator tc = new ThingCreator(i.ep.e);
-                Food food;
+                Thing food;
                 if (type == 0) {
-                    food = (Food) tc.createThing(Constants.categoryPFOOD, x, y);
+                    food = mySim.createThing(PFOOD, x/100.0, y/100.0);
                 } else if (type == 1) {
-                    food = (Food) tc.createThing(Constants.categoryNPFOOD, x, y);
+                    food = mySim.createThing(NPFOOD, x/100.0, y/100.0);
                 } else {
                     getOutBuffer().append(Constants.ERROR_CODE + " Invalid type of food: 0-perishable or 1-non-perishable.");
                     return;
                 }
 
-                this.sf.gameState.ThingsRN.updateRenderState();
-                getOutBuffer().append(food.getMyName() + " " + food.getX() + " " + food.getY() + "\r\n");
+                getOutBuffer().append(food.getName() + " " + food.getX() + " " + food.getY() + "\r\n");
 
             } else {
                 getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
@@ -1576,7 +1567,7 @@ public class WS3DCoppeliaSocket {
             getOutBuffer().append(Constants.ERROR_CODE + " Number of food is missing.");
             return;
         }
-        Food food;
+        Thing food;
 
         for (int j = 0; j < number; j++) {
             if (st.hasMoreTokens()) {
@@ -1594,20 +1585,17 @@ public class WS3DCoppeliaSocket {
                 return;
             }
 
-            ThingCreator tc = new ThingCreator(i.ep.e);
-
             if (type == 0) {
-                food = (Food) tc.createThing(Constants.categoryPFOOD, x, y);
+                food = mySim.createThing(PFOOD, x/100.0, y/100.0);
             } else if (type == 1) {
-                food = (Food) tc.createThing(Constants.categoryNPFOOD, x, y);
+                food = mySim.createThing(NPFOOD, x/100.0, y/100.0);
             } else {
                 getOutBuffer().append(Constants.ERROR_CODE + " Invalid type of food: 0-perishable or 1-non-perishable.");
                 return;
             }
-            getOutBuffer().append(food.getMyName() + " " + food.getX() + " " + food.getY() + "\r\n");
+            getOutBuffer().append(food.getName() + " " + food.getX() + " " + food.getY() + "\r\n");
         }
         getOutBuffer().append("\r\n ");
-        this.sf.gameState.ThingsRN.updateRenderState();
     }
 
     void ProcessNewBrick(StringTokenizer st) {
@@ -1638,10 +1626,27 @@ public class WS3DCoppeliaSocket {
                     if (st.hasMoreTokens()) {
                         s = st.nextToken();
                         y2 = Double.parseDouble(s);
-                        ThingCreator tc = new ThingCreator(i.ep.e);
-                        Brick brick = (Brick) tc.createBrick(type, x1, y1, x2, y2);
-                        this.sf.gameState.ThingsRN.updateRenderState();
-                        getOutBuffer().append(brick.getMyName() + " " + brick.getX()
+                        Constants.BrickTypes brickType = Constants.BrickTypes.RED_BRICK;
+                        switch(type){
+                            case 1:
+                                brickType = Constants.BrickTypes.GREEN_BRICK;
+                                break;
+                            case 2:
+                                brickType = Constants.BrickTypes.BLUE_BRICK;
+                                break;
+                            case 3:
+                                brickType = Constants.BrickTypes.YELLOW_BRICK;
+                                break;
+                            case 4:
+                                brickType = Constants.BrickTypes.MAGENTA_BRICK;
+                                break;
+                            case 5:
+                                brickType = Constants.BrickTypes.WHITE_BRICK;
+                                break;
+                        }
+                        Thing brick = mySim.createBrick(brickType, x1/100.0, y1/100.0, x2/100.0, y2/100.0);
+                        System.out.println("BRICK");
+                        getOutBuffer().append(brick.getName() + " " + brick.getX()
                                 + " " + brick.getY() + "\r\n");
                     } else {
                         getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
@@ -1649,7 +1654,6 @@ public class WS3DCoppeliaSocket {
                 } else {
                     getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
                 }
-
 
 
             } else {
@@ -1683,10 +1687,26 @@ public class WS3DCoppeliaSocket {
                 s = st.nextToken();
                 y = Double.parseDouble(s);
 
-                ThingCreator tc = new ThingCreator(i.ep.e);
-                Jewel jewel = (Jewel) tc.createCrystalOfType(type, x, y);
-                this.sf.gameState.ThingsRN.updateRenderState();
-                getOutBuffer().append(jewel.getMyName() + " " + jewel.getX()
+                Constants.JewelTypes jewelType = Constants.JewelTypes.RED_JEWEL;
+                switch(type){
+                    case 1:
+                        jewelType = Constants.JewelTypes.GREEN_JEWEL;
+                        break;
+                    case 2:
+                        jewelType = Constants.JewelTypes.BLUE_JEWEL;
+                        break;
+                    case 3:
+                        jewelType = Constants.JewelTypes.YELLOW_JEWEL;
+                        break;
+                    case 4:
+                        jewelType = Constants.JewelTypes.MAGENTA_JEWEL;
+                        break;
+                    case 5:
+                        jewelType = Constants.JewelTypes.WHITE_JEWEL;
+                        break;
+                }
+                Thing jewel = mySim.createThing(jewelType, x/100.0, y/100.0);
+                getOutBuffer().append(jewel.getName() + " " + jewel.getX()
                         + " " + jewel.getY() + "\r\n");
 
             } else {
@@ -1739,13 +1759,28 @@ public class WS3DCoppeliaSocket {
                 return;
             }
 
-            ThingCreator tc = new ThingCreator(i.ep.e);
-
-            Jewel jewel = (Jewel) tc.createCrystalOfType(type, x, y);
-            getOutBuffer().append(jewel.getMyName() + " " + jewel.getX() + " y: " + jewel.getY());
+            Constants.JewelTypes jewelType = Constants.JewelTypes.RED_JEWEL;
+            switch(type){
+                case 1:
+                    jewelType = Constants.JewelTypes.GREEN_JEWEL;
+                    break;
+                case 2:
+                    jewelType = Constants.JewelTypes.BLUE_JEWEL;
+                    break;
+                case 3:
+                    jewelType = Constants.JewelTypes.YELLOW_JEWEL;
+                    break;
+                case 4:
+                    jewelType = Constants.JewelTypes.MAGENTA_JEWEL;
+                    break;
+                case 5:
+                    jewelType = Constants.JewelTypes.WHITE_JEWEL;
+                    break;
+            }
+            Thing jewel = mySim.createThing(jewelType, x/100.0, y/100.0);
+            getOutBuffer().append(jewel.getName() + " " + jewel.getX() + " y: " + jewel.getY());
         }
         getOutBuffer().append("\r\n ");
-        this.sf.gameState.ThingsRN.updateRenderState();
     }
 
     /**
@@ -1755,19 +1790,9 @@ public class WS3DCoppeliaSocket {
      * @param st the creature ID.
      */
     void ProcessStartCreature(StringTokenizer st) {
-        int creatID = -1;
-        String cID;
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID + " \r\n");
-        Creature c = i.ep.e.getCpool().get(creatID);
-        c.hasStarted = true;
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
         getOutBuffer().append("\r\n Run creature run...\r\n");
     }
 
@@ -1777,43 +1802,20 @@ public class WS3DCoppeliaSocket {
      * @param st the creature ID.
      */
     void ProcessDeliverLeaflet(StringTokenizer st) {
-        int creatID = -1;
-        String cID;
         String leafletID = "";
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID + " \r\n");
+
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
         if (st.hasMoreTokens()) {
             leafletID = st.nextToken();
         } else {
             getOutBuffer().append(Constants.ERROR_CODE + " Leaflet ID is missing");
             return;
         }
-        Creature c = i.ep.e.getCpool().get(creatID);
-        Leaflet l = (Leaflet) i.ep.e.getLeafletPool().get(Long.parseLong(leafletID));
 
-        // Avoid deliver a leaflet already delivered
-        if (l.getActivity() != 0) {
-            // Avoid deliver of a incomplete leaflet
-            //if (l.isIfCompleted()) {
-            c.deliver(l);
+            c.deliverLeaflet((int) Long.parseLong(leafletID));
             getOutBuffer().append("\r\n Leaflet delivered!\r\n");
-            //} else {
-            //    getOutBuffer().append(Constants.ERROR_CODE).append(" Leaflet ").append(leafletID).append(" was not completed yet.\r\n");
-            //}
-        } else {
-//            getOutBuffer().append(Constants.ERROR_CODE).append(" Leaflet ").append(leafletID).append(" was already delivered.\r\n");
-            getOutBuffer().append(" Leaflet ").append(leafletID).append(" was already delivered.\r\n");
-        }
-        /** Suelen comentou aqui
-         c.deliver(l);
-         getOutBuffer().append("\r\n Leaflet delivered!\r\n");*/
     }
 
     /**
@@ -1822,19 +1824,10 @@ public class WS3DCoppeliaSocket {
      * @param st the creature ID.
      */
     void ProcessStopCreature(StringTokenizer st) {
-        int creatID = -1;
-        String cID;
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID);
-        Creature c = i.ep.e.getCpool().get(creatID);
-        c.hasStarted = false;
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
+        c.stop();
         getOutBuffer().append("Creature has stopped!!!");
     }
 
@@ -1845,7 +1838,7 @@ public class WS3DCoppeliaSocket {
             cID = st.nextToken();
             creatID = Integer.parseInt(cID);
         }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
+        if (creatID < 0 || creatID > mySim.getAllCreatures().size() - 1) {
             getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist. Must specify a creature.");
             return;
         }
@@ -1855,24 +1848,18 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessRefuel(StringTokenizer st) {
-        int creatID = -1;
-        String cID;
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist. Must specify a creature.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID + " \r\n");
-        Creature c = i.ep.e.getCpool().get(creatID);
+        /*
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
         c.refill();
         getOutBuffer().append(c.getFuel() + "\r\n");
+         */
+        getOutBuffer().append("Not Implemented");
     }
 
     void ProcessGetWorldNumEntities() {
-        getOutBuffer().append(i.ep.e.getCpool().size() + " " + i.ep.e.getOpool().size() + "\r\n");
+        getOutBuffer().append(mySim.getAllCreatures().size() + " " + mySim.getAllThings().size() + "\r\n");
 
     }
 
@@ -1895,48 +1882,78 @@ public class WS3DCoppeliaSocket {
             //   synchronized (i.ep.e.semaphore) {
 
             all.append(" ");
-            int number = i.ep.e.getCpool().size() + i.ep.e.getOpool().size();
-            all.append(number); //number of things in camera
 
-            List<Thing> allThings = new ArrayList<Thing>();
-            for (Thing c : i.ep.e.getCpool()) {
-                allThings.add(c);
-            }
-            for (Thing th : i.ep.e.getOpool()) {
-                allThings.add(th);
-            }
-            ListIterator<Thing> iter = allThings.listIterator();
-            Thing o;
+            List<Identifiable> allThings = new ArrayList<>();
+            allThings.addAll(mySim.getAllCreatures());
+            allThings.addAll(mySim.getAllThings());
+            int number = allThings.size();
+            all.append(number); //number of things in camera
+            ListIterator<Identifiable> iter = allThings.listIterator();
             while (iter.hasNext()) {
-                o = (Thing) iter.next();
-                all.append(" || ");
-                all.append(o.getMyName());
-                all.append(" ");
-                all.append(o.category); //flag to indicate the type of Thing
-                all.append(" ");
-                all.append(o.isOccluded); //indicates if occluded by another Thing
-                all.append(" ");
-                all.append(o.getX1());
-                all.append(" ");
-                all.append(o.getX2());
-                all.append(" ");
-                all.append(o.getY1());
-                all.append(" ");
-                all.append(o.getY2());
-                all.append(" ");
-                all.append(o.getPitch());
-                all.append(" ");
-                all.append(o.getMaterial().getHardness());
-                all.append(" ");
-                all.append(o.getMaterial().getEnergy());
-                all.append(" ");
-                all.append(o.getMaterial().getShininess());
-                all.append(" ");
-                all.append(o.getMaterial().getColorName());
-                all.append(" ");
-                all.append(o.getX()); //center of mass
-                all.append(" ");
-                all.append(o.getY());//""
+                Identifiable nextO = iter.next();
+                if (nextO instanceof Thing) {
+                    Thing o = (Thing) nextO;
+                    all.append(" || ");
+                    all.append(o.getName());
+                    all.append(" ");
+                    all.append(o.getSocketCategory()); //flag to indicate the type of Thing
+                    all.append(" ");
+                    all.append(0); //indicates if occluded by another Thing
+                    all.append(" ");
+                    all.append(o.getX1());
+                    all.append(" ");
+                    all.append(o.getX2());
+                    all.append(" ");
+                    all.append(o.getY1());
+                    all.append(" ");
+                    all.append(o.getY2());
+                    all.append(" ");
+                    all.append(-1.0);
+                    all.append(" ");
+                    all.append(1.0);
+                    all.append(" ");
+                    all.append(o.energy());
+                    all.append(" ");
+                    all.append(1.0);
+                    all.append(" ");
+                    all.append(o.getColorType().getName());
+                    all.append(" ");
+                    all.append(o.getX()); //center of mass
+                    all.append(" ");
+                    all.append(o.getY());//center of mass
+                }
+                if (nextO instanceof Creature) {
+                    Creature o = (Creature) nextO;
+                    all.append(" || ");
+                    all.append(o.getName());
+                    all.append(" ");
+                    all.append(0); //flag to indicate the type of Thing
+                    all.append(" ");
+                    all.append(0); //indicates if occluded by another Thing
+                    all.append(" ");
+                    all.append(o.getX1());
+                    all.append(" ");
+                    all.append(o.getX2());
+                    all.append(" ");
+                    all.append(o.getY1());
+                    all.append(" ");
+                    all.append(o.getY2());
+                    all.append(" ");
+                    all.append(-1.0);
+                    all.append(" ");
+                    all.append(1.0);
+                    all.append(" ");
+                    all.append(o.getFuel());
+                    all.append(" ");
+                    all.append(1.0);
+                    all.append(" ");
+                    all.append(o.getColor());
+                    all.append(" ");
+                    all.append(o.getX()); //center of mass
+                    all.append(" ");
+                    all.append(o.getY());//center of mass
+                }
+
             }
 
             getOutBuffer().append(all);
@@ -1955,10 +1972,10 @@ public class WS3DCoppeliaSocket {
             cID = st.nextToken();
             creatID = Integer.parseInt(cID);
         }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
+        if (creatID < 0 || creatID > mySim.getAllCreatures().size() - 1) {
             msg = "no";
         } else {
-            msg = "yes " + i.ep.e.getCpool().get(creatID).getMyName();
+            msg = "yes " + mySim.getAllCreatures().get(creatID).getName();
         }
         getOutBuffer().append(msg);
         return;
