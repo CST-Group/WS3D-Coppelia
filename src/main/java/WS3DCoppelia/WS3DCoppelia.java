@@ -32,6 +32,7 @@ public class WS3DCoppelia {
     private double width = 12, heigth = 12;
     private Long worldScript;
     private boolean running = false;
+    private Thing currentDS;
 
     /**
      * A connection to CoppeliaSim is created and necessary model files are loaded.
@@ -281,6 +282,15 @@ public class WS3DCoppelia {
         }
         return newBrick;
     }
+
+    public Thing createDeliverySpot(double x, double y){
+        Thing newDS = new Thing(sim, DeliverySpotType.DELIVERY_SPOT, x, y);
+        if (currentDS != null)
+            inWorldThings.remove(currentDS);
+        currentDS = newDS;
+        inWorldThings.add(newDS);
+        return newDS;
+    }
     
     public boolean isOccupied(double x, double y){
         synchronized(inWorldThings){
@@ -321,5 +331,11 @@ public class WS3DCoppelia {
     public void setHeigth(double heigth){
         if (!running)
             this.heigth = heigth / 100.0;
+    }
+
+    public List<Double> getDSPos(){
+        if (currentDS != null)
+            return currentDS.getPos();
+        return Arrays.asList(0.0, 0.0);
     }
 }

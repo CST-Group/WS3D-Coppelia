@@ -5,6 +5,8 @@
 package WS3DCoppelia.util;
 
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
+import org.checkerframework.checker.units.qual.C;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +18,8 @@ public class Constants {
 
     public static final List<Double> THING_SIZE = Arrays.asList( 0.1,  0.1,  0.1);
     public static final double BRICK_HEIGTH =  0.5;
-    
+    public static final Double DELIVERY_SPOT_HEIGTH = 0.6;
+
     public enum Color {
         RED(Arrays.asList( 0.95,  0.25,  0.25), "Red"),
         GREEN(Arrays.asList( 0.25,  0.95,  0.25), "Green"),
@@ -30,7 +33,8 @@ public class Constants {
         AGENT_YELLOW(Arrays.asList( 1.0,  0.8,  0.25), "Yellow"),
         AGENT_GREEN(Arrays.asList( 0.55,  0.8,  0.15), "Green"),
         AGENT_MAGENTA(Arrays.asList( 0.4,  0.3,  0.57), "Magenta"),
-        AGENT_RED(Arrays.asList( 0.98,  0.25,  0.27), "Red");
+        AGENT_RED(Arrays.asList( 0.98,  0.25,  0.27), "Red"),
+        DS_YELLOW(Arrays.asList( 0.90,  0.80,  0.15), "Yellow");
 
         private final List<Double> rgb;
         private final List<Double> hls;
@@ -78,7 +82,7 @@ public class Constants {
         public List<Double> hls() { return hls;}
         public String getName(){ return name;}
     }
-    
+
     public static String BASE_SCRIPT = "#python\n"
             + "\n"
             + "from math import sqrt, floor\n"
@@ -196,10 +200,10 @@ public class Constants {
             + "    new_fuel = 1000.1 if (fuel + energy) > 1000 else (fuel + energy)\n"
             + "    sim.setFloatSignal(fuel_id, new_fuel)\n"
             + "    return 1\n";
-   
+
     public static double THING_OCCUPANCY_RADIUS = 0.15;
     public static double AGENT_OCCUPANCY_RADIUS = 0.25;
-    
+
     /**
      * Resources Generator package constants
      */
@@ -215,7 +219,7 @@ public class Constants {
     public static final double pFoodLAMBDA = 1;
     public static final double npFoodLAMBDA = 0.7;
     public static double SECURITY = 30; //empiric
-    
+
     //Leaflet
     public static int LEAFLET_NUMBER_OF_ITEMS = 3;
     public static int MAX_NUMBER_ITEMS_PER_COLOR = 3;
@@ -235,7 +239,23 @@ public class Constants {
         public String typeName();
         public int socketCategory();
     }
-    
+
+    public enum DeliverySpotType implements ThingsType{
+        DELIVERY_SPOT();
+
+        @Override
+        public int shape() { return RemoteAPIObjects._sim.primitiveshape_capsule;}
+
+        @Override
+        public Color color() { return Color.DS_YELLOW;}
+
+        @Override
+        public String typeName() { return "DeliverySpot";}
+
+        @Override
+        public int socketCategory() { return 4;}
+    }
+
     public enum FoodTypes implements ThingsType{
         /**
          * Perishable food. Red sphere.
@@ -245,7 +265,7 @@ public class Constants {
          * Non-perishable food. Brown sphere.
          */
         NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.ORANGE, 150, "NP_Food", 22);
-        
+
         private final int shape;
         private final Color color;
         private final String type_name;
@@ -257,9 +277,9 @@ public class Constants {
             this.color = color;
             this.type_name = name;
             this.energy = energy;
-            this.socketCategory = socketCategory();
+            this.socketCategory = socketCategory;
         }
-        
+
         @Override
         public int shape() { return shape; }
         @Override
@@ -269,7 +289,7 @@ public class Constants {
         public double energy() { return energy; }
         public int socketCategory() { return socketCategory; }
     }
-    
+
     public enum JewelTypes implements ThingsType{
         RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.RED, "Red_Jewel"),
         GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.GREEN, "Green_Jewel"),
@@ -277,17 +297,17 @@ public class Constants {
         YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.YELLOW, "Yellow_Jewel"),
         MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.MAGENTA, "Magenta_Jewel"),
         WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.WHITE, "White_Jewel");
-        
+
         private final int shape;
         private final Color color;
         private final String type_name;
-        
+
         JewelTypes(int shape, Color color, String name){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
         }
-        
+
         @Override
         public int shape() { return shape; }
         @Override
@@ -297,7 +317,7 @@ public class Constants {
         @Override
         public int socketCategory() { return 3; }
     }
-    
+
     public enum BrickTypes implements ThingsType{
         RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.RED, "Red_Brick"),
         BLUE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BLUE, "Blue_Brick"),
@@ -312,13 +332,13 @@ public class Constants {
         private final int shape;
         private final Color color;
         private final String type_name;
-        
+
         BrickTypes(int shape, Color color, String name){
             this.shape = shape;
             this.color = color;
             this.type_name = name;
         }
-        
+
         @Override
         public int shape() { return shape; }
         @Override
@@ -328,7 +348,7 @@ public class Constants {
         @Override
         public int socketCategory() { return 1; }
     }
-    
+
     public static int getPaymentColor(JewelTypes type){
         switch(type) {
             case RED_JEWEL:

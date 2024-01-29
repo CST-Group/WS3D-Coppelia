@@ -41,7 +41,10 @@ public class Thing extends Identifiable {
 
     public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, double x, double y){
         sim = sim_;
-        pos = Arrays.asList(new Double[]{x, y, 0.05});
+        if( category_ instanceof Constants.DeliverySpotType)
+            pos = Arrays.asList(new Double[]{x, y, Constants.DELIVERY_SPOT_HEIGTH / 2});
+        else
+            pos = Arrays.asList(new Double[]{x, y, 0.05});
         category = category_;
         List<Double> colorCat = category.color().rgb();
         for (Double colorElem : colorCat){
@@ -56,6 +59,8 @@ public class Thing extends Identifiable {
         depth = Math.abs(y1 - y2);
         if( category_ instanceof Constants.BrickTypes)
             pos = Arrays.asList(new Double[]{(x1 + x2) / 2, (y1 + y2) / 2, Constants.BRICK_HEIGTH / 2});
+        else if( category_ instanceof Constants.DeliverySpotType)
+            pos = Arrays.asList(new Double[]{(x1 + x2) / 2, (y1 + y2) / 2, Constants.DELIVERY_SPOT_HEIGTH / 2});
         else
             pos = Arrays.asList(new Double[]{(x1 + x2) / 2, (y1 + y2) / 2, (double) 0.05});
         category = category_;
@@ -72,6 +77,8 @@ public class Thing extends Identifiable {
             List<Double> size;
             if (category instanceof Constants.BrickTypes){
                 size = Arrays.asList(new Double[]{width, depth, Constants.BRICK_HEIGTH});
+            } else if (category instanceof Constants.DeliverySpotType) {
+                size = Arrays.asList(new Double[]{0.3, 0.3, Constants.DELIVERY_SPOT_HEIGTH});
             } else {
                 size = THING_SIZE;
             }
@@ -257,6 +264,10 @@ public class Thing extends Identifiable {
 
     public int getSocketCategory() {
         return category.socketCategory();
+    }
+
+    public boolean isCollectable(){
+        return (!removed) && (!removing);
     }
 
 }

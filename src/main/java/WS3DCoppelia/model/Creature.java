@@ -225,7 +225,6 @@ public class Creature extends Identifiable {
                                 this.execEatIt(thing);
                         break;
                     case "rotate":
-                        System.out.println("Rot1");
                         if (rotate) {
                             this.execRotate(((boolean) commandQueue.get(command)) ? 1 : 0);
                             executed.remove(command);
@@ -429,7 +428,7 @@ public class Creature extends Identifiable {
 
     private void execSackIt(Thing thing) {
         try {
-            if (!thing.removed) {
+            if (thing.isCollectable()) {
                 thing.remove();
                 bag.insertItem(thing.thingType(), 1);
                 for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {

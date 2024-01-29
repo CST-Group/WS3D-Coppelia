@@ -71,6 +71,7 @@ public class WS3DCoppeliaSocket {
         Logger.getLogger("motorcontrol").setLevel(Level.WARNING);
         //NativeUtils.setLibraryPath(".");
         //Logger.getLogger("com.jme").setLevel(Level.ALL);
+        log.info("INITIALIZING WS3D SERVER");
         mySim = new WS3DCoppelia();
         clientsConnected = new ArrayList<ServerThread>();
         try {
@@ -186,7 +187,7 @@ public class WS3DCoppeliaSocket {
             ProcessGetSimulPars();
         } else if (command.equalsIgnoreCase(("worldReset"))) {
             ProcessWorldReset();
-        } else if (command.equalsIgnoreCase(("setgoTo"))) {
+        } else if (command.equalsIgnoreCase(("setGoTo"))) {
             ProcessSetDifferentialStatusCML(st);
         } else if (command.equalsIgnoreCase(("setAngle"))) {
             ProcessSetDifferentialStatus3D(st);
@@ -355,12 +356,11 @@ public class WS3DCoppeliaSocket {
         Creature c = getCreatureFromID(st);
         if (c == null) return;
 
-        getOutBuffer().append("" + c.getX() + " " + c.getY() + " " + c.getPitch() + "\r\n");
+        getOutBuffer().append("" + c.getX() + " " + c.getY() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
     }
 
 
     void ProcessNewDeliverySpot(StringTokenizer st) {
-        /*
         String s;
         int type;
         double x, y;
@@ -383,11 +383,9 @@ public class WS3DCoppeliaSocket {
                 s = st.nextToken();
                 y = Double.parseDouble(s);
 
-                ThingCreator tc = new ThingCreator(i.ep.e);
-                DeliverySpot delivery = (DeliverySpot) tc.createThing(type, x, y);
-                this.sf.gameState.ThingsRN.updateRenderState();
-                getOutBuffer().append(delivery.getMyName() + " " + delivery.getX()
-                        + " " + delivery.getY() + "\r\n");
+                Thing newDS = mySim.createDeliverySpot(x/100.0, y/100.0);
+                getOutBuffer().append(newDS.getName() + " " + newDS.getX()
+                        + " " + newDS.getY() + "\r\n");
 
             } else {
                 getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
@@ -395,9 +393,6 @@ public class WS3DCoppeliaSocket {
         } else {
             getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
         }
-         */
-            getOutBuffer().append("Not implemented");
-
     }
 
     /**
@@ -668,7 +663,7 @@ public class WS3DCoppeliaSocket {
                     + c.getX() + " "
                     + c.getY() + " "
                     + "0.4 "
-                    + c.getPitch() + " "
+                    + Math.toDegrees(c.getPitch()) + " "
                     + "2 "
                     + "0 "
                     + c.getSpeed() + " "
@@ -700,8 +695,8 @@ public class WS3DCoppeliaSocket {
         getOutBuffer().append((int) mySim.getWorldWidth() * 100 + " "
                 + (int) mySim.getWorldHeigth() * 100 + " "
                 + //delivery spot:    Not Implemented
-                "0 " + //x
-                "0" //y
+                mySim.getDSPos().get(0) + " " + //x
+                mySim.getDSPos().get(1) + " " //y
                 + "\r\n");
     }
 
@@ -795,9 +790,9 @@ public class WS3DCoppeliaSocket {
                 }
 
                 double vel = (Double.parseDouble(vr) + Double.parseDouble(vl)) / 2;
-                c.moveTo(vel, Double.parseDouble(xf), Double.parseDouble(yf));
+                c.moveTo(vel, Double.parseDouble(xf) / 100.0, Double.parseDouble(yf) / 100.0);
 
-                getOutBuffer().append("" + c.getSpeed() + " " + c.getPitch() + "\r\n");
+                getOutBuffer().append("" + c.getSpeed() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
             } //end syncronized
         } //end try
         catch (Exception e) {
@@ -875,7 +870,7 @@ public class WS3DCoppeliaSocket {
 
             String[] thingId = thingName.split("_");
             if (thingId.length > 1) {
-                c.putInSack(Integer.parseInt(thingId[1]));
+                c.putInSack(Integer.parseInt(thingId[thingId.length - 1]));
             }
             getOutBuffer().append("" + thingName + "\r\n");
 
@@ -1091,8 +1086,8 @@ public class WS3DCoppeliaSocket {
             else
                 c.stop();
 
-            log.info("Pitch changed to (in degrees)= " + c.getPitch());
-            getOutBuffer().append("" + c.getSpeed() + " " + c.getPitch() + "\r\n");
+            log.info("Pitch changed to (in degrees)= " + Math.toDegrees(c.getPitch()));
+            getOutBuffer().append("" + c.getSpeed() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
 
 
         } //end try
@@ -1311,7 +1306,7 @@ public class WS3DCoppeliaSocket {
 
                     Creature c = mySim.createAgent(x/100.0, y/100.0);
 
-                    getOutBuffer().append("" + mySim.getAllCreatures().indexOf(c) + " " + c.getName() + " " + c.getX() + " " + c.getY() + " " + c.getPitch() + "\r\n");
+                    getOutBuffer().append("" + mySim.getAllCreatures().indexOf(c) + " " + c.getName() + " " + c.getX() + " " + c.getY() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
 
                 } else {
                     getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
