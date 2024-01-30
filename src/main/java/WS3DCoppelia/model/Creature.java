@@ -491,6 +491,9 @@ public class Creature extends Identifiable {
             for (Entry<Constants.JewelTypes, Integer> requirement : leaflets[pos].getRequirements().entrySet()) {
                 bag.removeItem(requirement.getKey(), requirement.getValue());
             }
+            for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
+                leaflets[i].updateProgress(bag);
+            }
         } else {
             System.out.println("Not completed");
         }
