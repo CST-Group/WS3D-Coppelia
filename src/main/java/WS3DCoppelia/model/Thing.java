@@ -164,11 +164,11 @@ public class Thing extends Identifiable {
     }
 
     public double getY1(){
-        return (pos.get(1) - width / 2)*100;
+        return (pos.get(1) - depth / 2)*100;
     }
 
     public double getY2(){
-        return (pos.get(1) + width / 2)*100;
+        return (pos.get(1) + depth / 2)*100;
     }
 
     public ThingsType thingType(){

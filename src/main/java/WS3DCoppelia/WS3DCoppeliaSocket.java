@@ -26,13 +26,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.ListIterator;
 
 import WS3DCoppelia.util.*;
 import WS3DCoppelia.model.*;
@@ -840,8 +836,21 @@ public class WS3DCoppeliaSocket {
                     c.rotate(false);
                 else if (Double.parseDouble(vr) < Double.parseDouble(vl))
                     c.rotate(true);
-                else
-                    c.stop();
+                else {
+                    double ang = Double.parseDouble(w);
+                    double xScale = Math.abs((mySim.getWorldWidth() - c.getPos().get(0)) / Math.cos(ang));
+                    double yScale = Math.abs((mySim.getWorldHeigth() - c.getPos().get(1)) / Math.sin(ang));
+                    double x = Math.cos(ang) * Math.min(xScale, yScale) + c.getPos().get(0);
+                    double y = Math.sin(ang) * Math.min(xScale, yScale) + c.getPos().get(1);
+                    double vel = (Double.parseDouble(vr) + Double.parseDouble(vl)) / 2.0;
+                    System.out.print(ang + " ");
+                    System.out.print(xScale + " ");
+                    System.out.print(yScale + " ");
+                    System.out.print(x + " ");
+                    System.out.print(y + " ");
+                    System.out.println(vel);
+                    c.moveTo(vel, x, y);
+                }
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Double.parseDouble(w) + "\r\n");
 
