@@ -160,7 +160,9 @@ public class WS3DCoppelia {
         sim.setObjectAlias(foodTreeHandle , "Foods");
         Long jewelTreeHandle = sim.createDummy(0.01);
         sim.setObjectAlias(jewelTreeHandle , "Jewels");
-        
+        Long DSTreeHandle = sim.createDummy(0.01);
+        sim.setObjectAlias(DSTreeHandle , "Delivery");
+
         
         updateState();
         startTime = sim.getSimulationTime();

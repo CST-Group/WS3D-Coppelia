@@ -38,6 +38,7 @@ public class Thing extends Identifiable {
     private List<Double> color = new ArrayList<>();
 
     private boolean initialized = false;
+    private boolean hidden = false;
 
     public Thing(RemoteAPIObjects._sim sim_, ThingsType category_, double x, double y){
         sim = sim_;
@@ -97,7 +98,7 @@ public class Thing extends Identifiable {
         List<List<Double>> poss = things.stream().map(t->t.getPos()).collect(Collectors.toList());
         List<List<Double>> sizes = things.stream().map(t->t.getSize()).collect(Collectors.toList());
         List<List<Double>> colors = things.stream().map(t->t.getColor()).collect(Collectors.toList());
-        List<Integer> categories = things.stream().map(t->t.isFood() ? 1 : t.isJewel() ? 2 : t.isBrick() ? 3 : 0).collect(Collectors.toList());
+        List<Integer> categories = things.stream().map(t->t.isFood() ? 1 : t.isJewel() ? 2 : t.isBrick() ? 3 : t.isDeliverySpot() ? 4 : 0).collect(Collectors.toList());
 
         try{
             Long floorHandle =  sim_.getObject("/Floor");
@@ -180,6 +181,8 @@ public class Thing extends Identifiable {
 
     public boolean isBrick() { return category instanceof Constants.BrickTypes; }
 
+    public boolean isDeliverySpot() { return category instanceof Constants.DeliverySpotType; }
+
     public double energy() {
         if (category instanceof Constants.FoodTypes)
             return ((Constants.FoodTypes) category).energy();
@@ -192,6 +195,20 @@ public class Thing extends Identifiable {
         Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
         sim.callScriptFunction("remove_thing", script, this.thingHandle);
         removing = true;
+    }
+
+    public void hide() throws CborException {
+        Long floorHandle =  sim.getObject("/Floor");
+        Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+        sim.callScriptFunction("hide_thing", script, this.thingHandle);
+        hidden = true;
+    }
+
+    public void unhide() throws CborException {
+        Long floorHandle =  sim.getObject("/Floor");
+        Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+        sim.callScriptFunction("unhide_thing", script, this.thingHandle);
+        hidden = false;
     }
 
     public List<Double> getRelativePos(List<Double> source_pos) {
@@ -222,8 +239,10 @@ public class Thing extends Identifiable {
 
     public List<Double> getSize(){
         List<Double> size;
-        if (category instanceof Constants.BrickTypes){
+        if (category instanceof Constants.BrickTypes) {
             size = Arrays.asList(new Double[]{width, depth, Constants.BRICK_HEIGTH});
+        } else if (category instanceof Constants.DeliverySpotType){
+                size = Arrays.asList(new Double[]{width, depth, Constants.DELIVERY_SPOT_HEIGTH});
         } else {
             size = THING_SIZE;
         }
@@ -269,5 +288,7 @@ public class Thing extends Identifiable {
     public boolean isCollectable(){
         return (!removed) && (!removing);
     }
+
+    public boolean isHidden() { return hidden;}
 
 }

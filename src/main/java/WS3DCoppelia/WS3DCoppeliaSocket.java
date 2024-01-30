@@ -898,7 +898,7 @@ public class WS3DCoppeliaSocket {
 
             String[] thingId = thingName.split("_");
             if (thingId.length > 1) {
-                c.eatIt(Integer.parseInt(thingId[1]));
+                c.eatIt(Integer.parseInt(thingId[thingId.length-1]));
             }
             getOutBuffer().append("" + thingName + "\r\n");
 
@@ -910,19 +910,9 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessHideIt(StringTokenizer st) {
-        /*
-        int creatID = -1;
-        String cID;
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID + " \r\n");
-        Creature c = i.ep.e.getCpool().get(creatID);
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
         try {
             synchronized (c) {
                 String thingName = "";
@@ -933,14 +923,9 @@ public class WS3DCoppeliaSocket {
                     getOutBuffer().append(Constants.ERROR_CODE + " Thing to be hidden is missing");
                     return;
                 }
-
-
-                //System.out.println("........................... thing name: "+ thingName);
-
-                Thing th = i.ep.e.getThingFromName(thingName);
-                if (th != null) {
-                    c.digAndHideIt(th, i.ep.e);
-                    i.ep.repaint();
+                String[] thingId = thingName.split("_");
+                if (thingId.length > 1) {
+                    c.hide(Integer.parseInt(thingId[thingId.length - 1]));
                 }
                 getOutBuffer().append("" + thingName + "\r\n");
 
@@ -950,25 +935,13 @@ public class WS3DCoppeliaSocket {
         catch (Exception e) {
             e.printStackTrace();
         }
-         */
-        getOutBuffer().append("Not Implemented \r\n");
 
     }
 
     void ProcessUnhideIt(StringTokenizer st) {
-        /*
-        int creatID = -1;
-        String cID;
-        if (st.hasMoreTokens()) {
-            cID = st.nextToken();
-            creatID = Integer.parseInt(cID);
-        }
-        if (creatID < 0 || creatID > i.ep.e.getCpool().size() - 1) {
-            getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.");
-            return;
-        }
-        //getOutBuffer().append("Creature ID:" + creatID + " \r\n");
-        Creature c = i.ep.e.getCpool().get(creatID);
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
         try {
             synchronized (c) {
                 String thingName = "";
@@ -980,10 +953,9 @@ public class WS3DCoppeliaSocket {
                     return;
                 }
 
-                Thing th = i.ep.e.getThingFromName(thingName);
-                if (th != null) {
-                    th.undoHideMe(i.ep.e);
-                    i.ep.repaint();
+                String[] thingId = thingName.split("_");
+                if (thingId.length > 1) {
+                    c.unhide(Integer.parseInt(thingId[thingId.length - 1]));
                 }
                 getOutBuffer().append("" + thingName + "\r\n");
 
@@ -993,7 +965,6 @@ public class WS3DCoppeliaSocket {
         catch (Exception e) {
             e.printStackTrace();
         }
-         */
         getOutBuffer().append("Not Implemented \r\n");
 
     }
@@ -1640,7 +1611,6 @@ public class WS3DCoppeliaSocket {
                                 break;
                         }
                         Thing brick = mySim.createBrick(brickType, x1/100.0, y1/100.0, x2/100.0, y2/100.0);
-                        System.out.println("BRICK");
                         getOutBuffer().append(brick.getName() + " " + brick.getX()
                                 + " " + brick.getY() + "\r\n");
                     } else {

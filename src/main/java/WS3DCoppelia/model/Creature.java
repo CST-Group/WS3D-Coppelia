@@ -8,6 +8,7 @@ import WS3DCoppelia.util.Constants;
 import WS3DCoppelia.util.Constants.*;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -213,13 +214,7 @@ public class Creature extends Identifiable {
                         this.execMove((List<Double>) commandQueue.get(command));
                         break;
                     case "eat":
-                        if (commandQueue.get(command) instanceof Integer)
-                            thing = inWorldThings.stream()
-                                    .filter(e -> e.checkId((int) commandQueue.get(command)))
-                                    .findFirst()
-                                    .orElse(null);
-                        else
-                            thing = (Thing) commandQueue.get(command);
+                        thing = getThing(command, inWorldThings);
                         if (thing != null)
                             if (thing.isFood())
                                 this.execEatIt(thing);
@@ -231,13 +226,7 @@ public class Creature extends Identifiable {
                         }
                         break;
                     case "sackIt":
-                        if (commandQueue.get(command) instanceof Integer)
-                            thing = inWorldThings.stream()
-                                    .filter(e -> e.checkId((int) commandQueue.get(command)))
-                                    .findFirst()
-                                    .orElse(null);
-                        else
-                            thing = (Thing) commandQueue.get(command);
+                        thing = getThing(command, inWorldThings);
                         if (thing != null)
                             this.execSackIt(thing);
                         break;
@@ -248,12 +237,33 @@ public class Creature extends Identifiable {
                     case "stop":
                         this.execStop();
                         break;
+                    case "hide":
+                        thing = getThing(command, inWorldThings);
+                        if (thing != null)
+                            this.execHide(thing);
+                        break;
+                    case "unhide":
+                        thing = getThing(command, inWorldThings);
+                        if (thing != null)
+                            this.execUnhide(thing);
+
                     default:
                 }
             }
             for (String c : executed)
                 commandQueue.remove(c);
         }
+    }
+
+    @Nullable
+    private Thing getThing(String command, List<Thing> inWorldThings) {
+        if (commandQueue.get(command) instanceof Integer)
+            return inWorldThings.stream()
+                    .filter(e -> e.checkId((int) commandQueue.get(command)))
+                    .findFirst()
+                    .orElse(null);
+        else
+            return  (Thing) commandQueue.get(command);
     }
 
     public void run(List<Thing> inWorldThings, List<Creature> inWorldAgents, long worldScript_) {
@@ -365,6 +375,30 @@ public class Creature extends Identifiable {
         }
     }
 
+    public void hide(int thingId) {
+        synchronized (commandQueue) {
+            commandQueue.put("hide", thingId);
+        }
+    }
+
+    public void hide(Thing thing) {
+        synchronized (commandQueue) {
+            commandQueue.put("hide", thing);
+        }
+    }
+
+    public void unhide(int thingId) {
+        synchronized (commandQueue) {
+            commandQueue.put("unhide", thingId);
+        }
+    }
+
+    public void unhide(Thing thing) {
+        synchronized (commandQueue) {
+            commandQueue.put("unhide", thing);
+        }
+    }
+
     private void execMove(List<Double> params) {
         try {
             double targetVel = params.get(0);
@@ -459,6 +493,26 @@ public class Creature extends Identifiable {
             }
         } else {
             System.out.println("Not completed");
+        }
+    }
+
+    private void execUnhide(Thing thing) {
+        try {
+            if (thing.isHidden()) {
+                thing.unhide();
+            }
+        } catch (CborException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void execHide(Thing thing) {
+        try {
+            if (!thing.isHidden()) {
+                thing.hide();
+            }
+        } catch (CborException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
