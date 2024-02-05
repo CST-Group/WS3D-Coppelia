@@ -786,7 +786,7 @@ public class WS3DCoppeliaSocket {
                 }
 
                 double vel = (Double.parseDouble(vr) + Double.parseDouble(vl)) / 2;
-                c.moveTo(vel, Double.parseDouble(xf) / 100.0, Double.parseDouble(yf) / 100.0);
+                c.moveTo(vel/100.0, Double.parseDouble(xf) / 100.0, Double.parseDouble(yf) / 100.0);
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
             } //end syncronized
@@ -834,11 +834,11 @@ public class WS3DCoppeliaSocket {
 
                 double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
                 if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                    c.rotate(false, vel);
+                    c.rotate(false, vel/100.0);
                 else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                    c.rotate(true, vel);
+                    c.rotate(true, vel/100.0);
                 else {
-                    c.moveForward(vel);
+                    c.moveForward(vel/ 100.0);
                 }
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Double.parseDouble(w) + "\r\n");
@@ -1050,9 +1050,9 @@ public class WS3DCoppeliaSocket {
 
             double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
             if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                c.rotate(false, vel);
+                c.rotate(false, vel/100.0);
             else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                c.rotate(true, vel);
+                c.rotate(true, vel/100.0);
             else
                 c.stop();
 
