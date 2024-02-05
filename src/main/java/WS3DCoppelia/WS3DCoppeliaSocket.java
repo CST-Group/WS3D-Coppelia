@@ -327,7 +327,7 @@ public class WS3DCoppeliaSocket {
      */
     void ProcessGetEnvironment() {
         //getOutBuffer().append("" + i.ep.getPreferredSize().width + " " + i.ep.getPreferredSize().height + "\r\n");
-        getOutBuffer().append("" + mySim.getWorldWidth()*100 + " " + mySim.getWorldHeigth()*100 + "\r\n");
+        getOutBuffer().append("" + mySim.getWorldWidth() * 100 + " " + mySim.getWorldHeigth() * 100 + "\r\n");
     }
 
     /**
@@ -379,7 +379,7 @@ public class WS3DCoppeliaSocket {
                 s = st.nextToken();
                 y = Double.parseDouble(s);
 
-                Thing newDS = mySim.createDeliverySpot(x/100.0, y/100.0);
+                Thing newDS = mySim.createDeliverySpot(x / 100.0, y / 100.0);
                 getOutBuffer().append(newDS.getName() + " " + newDS.getX()
                         + " " + newDS.getY() + "\r\n");
 
@@ -625,7 +625,7 @@ public class WS3DCoppeliaSocket {
                 return;
             }
 
-            Creature c = mySim.getAllCreatures().stream().filter(e->e.getId() == creatID).findFirst().orElseGet(null);
+            Creature c = mySim.getAllCreatures().stream().filter(e -> e.getId() == creatID).findFirst().orElseGet(null);
             if (c == null) {
                 getOutBuffer().append(Constants.ERROR_CODE + " Creature does not exist.");
                 return;
@@ -832,24 +832,13 @@ public class WS3DCoppeliaSocket {
                     return;
                 }
 
+                double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
                 if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                    c.rotate(false);
+                    c.rotate(false, vel);
                 else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                    c.rotate(true);
+                    c.rotate(true, vel);
                 else {
-                    double ang = Double.parseDouble(w);
-                    double xScale = Math.abs((mySim.getWorldWidth() - c.getPos().get(0)) / Math.cos(ang));
-                    double yScale = Math.abs((mySim.getWorldHeigth() - c.getPos().get(1)) / Math.sin(ang));
-                    double x = Math.cos(ang) * Math.min(xScale, yScale) + c.getPos().get(0);
-                    double y = Math.sin(ang) * Math.min(xScale, yScale) + c.getPos().get(1);
-                    double vel = (Double.parseDouble(vr) + Double.parseDouble(vl)) / 2.0;
-                    System.out.print(ang + " ");
-                    System.out.print(xScale + " ");
-                    System.out.print(yScale + " ");
-                    System.out.print(x + " ");
-                    System.out.print(y + " ");
-                    System.out.println(vel);
-                    c.moveTo(vel, x, y);
+                    c.moveForward(vel);
                 }
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Double.parseDouble(w) + "\r\n");
@@ -907,7 +896,7 @@ public class WS3DCoppeliaSocket {
 
             String[] thingId = thingName.split("_");
             if (thingId.length > 1) {
-                c.eatIt(Integer.parseInt(thingId[thingId.length-1]));
+                c.eatIt(Integer.parseInt(thingId[thingId.length - 1]));
             }
             getOutBuffer().append("" + thingName + "\r\n");
 
@@ -1059,10 +1048,11 @@ public class WS3DCoppeliaSocket {
                 return;
             }
 
+            double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
             if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                c.rotate(false);
+                c.rotate(false, vel);
             else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                c.rotate(true);
+                c.rotate(true, vel);
             else
                 c.stop();
 
@@ -1284,7 +1274,7 @@ public class WS3DCoppeliaSocket {
                         if (s.equalsIgnoreCase("1")) color = true;
                     }
 
-                    Creature c = mySim.createAgent(x/100.0, y/100.0);
+                    Creature c = mySim.createAgent(x / 100.0, y / 100.0);
 
                     getOutBuffer().append("" + mySim.getAllCreatures().indexOf(c) + " " + c.getName() + " " + c.getX() + " " + c.getY() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
 
@@ -1504,9 +1494,9 @@ public class WS3DCoppeliaSocket {
 
                 Thing food;
                 if (type == 0) {
-                    food = mySim.createThing(PFOOD, x/100.0, y/100.0);
+                    food = mySim.createThing(PFOOD, x / 100.0, y / 100.0);
                 } else if (type == 1) {
-                    food = mySim.createThing(NPFOOD, x/100.0, y/100.0);
+                    food = mySim.createThing(NPFOOD, x / 100.0, y / 100.0);
                 } else {
                     getOutBuffer().append(Constants.ERROR_CODE + " Invalid type of food: 0-perishable or 1-non-perishable.");
                     return;
@@ -1561,9 +1551,9 @@ public class WS3DCoppeliaSocket {
             }
 
             if (type == 0) {
-                food = mySim.createThing(PFOOD, x/100.0, y/100.0);
+                food = mySim.createThing(PFOOD, x / 100.0, y / 100.0);
             } else if (type == 1) {
-                food = mySim.createThing(NPFOOD, x/100.0, y/100.0);
+                food = mySim.createThing(NPFOOD, x / 100.0, y / 100.0);
             } else {
                 getOutBuffer().append(Constants.ERROR_CODE + " Invalid type of food: 0-perishable or 1-non-perishable.");
                 return;
@@ -1602,7 +1592,7 @@ public class WS3DCoppeliaSocket {
                         s = st.nextToken();
                         y2 = Double.parseDouble(s);
                         Constants.BrickTypes brickType = Constants.BrickTypes.RED_BRICK;
-                        switch(type){
+                        switch (type) {
                             case 1:
                                 brickType = Constants.BrickTypes.GREEN_BRICK;
                                 break;
@@ -1619,7 +1609,7 @@ public class WS3DCoppeliaSocket {
                                 brickType = Constants.BrickTypes.WHITE_BRICK;
                                 break;
                         }
-                        Thing brick = mySim.createBrick(brickType, x1/100.0, y1/100.0, x2/100.0, y2/100.0);
+                        Thing brick = mySim.createBrick(brickType, x1 / 100.0, y1 / 100.0, x2 / 100.0, y2 / 100.0);
                         getOutBuffer().append(brick.getName() + " " + brick.getX()
                                 + " " + brick.getY() + "\r\n");
                     } else {
@@ -1662,7 +1652,7 @@ public class WS3DCoppeliaSocket {
                 y = Double.parseDouble(s);
 
                 Constants.JewelTypes jewelType = Constants.JewelTypes.RED_JEWEL;
-                switch(type){
+                switch (type) {
                     case 1:
                         jewelType = Constants.JewelTypes.GREEN_JEWEL;
                         break;
@@ -1679,7 +1669,7 @@ public class WS3DCoppeliaSocket {
                         jewelType = Constants.JewelTypes.WHITE_JEWEL;
                         break;
                 }
-                Thing jewel = mySim.createThing(jewelType, x/100.0, y/100.0);
+                Thing jewel = mySim.createThing(jewelType, x / 100.0, y / 100.0);
                 getOutBuffer().append(jewel.getName() + " " + jewel.getX()
                         + " " + jewel.getY() + "\r\n");
 
@@ -1734,7 +1724,7 @@ public class WS3DCoppeliaSocket {
             }
 
             Constants.JewelTypes jewelType = Constants.JewelTypes.RED_JEWEL;
-            switch(type){
+            switch (type) {
                 case 1:
                     jewelType = Constants.JewelTypes.GREEN_JEWEL;
                     break;
@@ -1751,7 +1741,7 @@ public class WS3DCoppeliaSocket {
                     jewelType = Constants.JewelTypes.WHITE_JEWEL;
                     break;
             }
-            Thing jewel = mySim.createThing(jewelType, x/100.0, y/100.0);
+            Thing jewel = mySim.createThing(jewelType, x / 100.0, y / 100.0);
             getOutBuffer().append(jewel.getName() + " " + jewel.getX() + " y: " + jewel.getY());
         }
         getOutBuffer().append("\r\n ");
@@ -1788,8 +1778,8 @@ public class WS3DCoppeliaSocket {
             return;
         }
 
-            c.deliverLeaflet((int) Long.parseLong(leafletID));
-            getOutBuffer().append("\r\n Leaflet delivered!\r\n");
+        c.deliverLeaflet((int) Long.parseLong(leafletID));
+        getOutBuffer().append("\r\n Leaflet delivered!\r\n");
     }
 
     /**

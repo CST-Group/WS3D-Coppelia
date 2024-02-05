@@ -326,13 +326,37 @@ public class WS3DCoppelia {
     public List<Thing> getAllThings() { return inWorldThings;}
 
     public void setWidth(double width){
-        if (!running)
-            this.width = width / 100.0;
+        this.width = width / 100.0;
+        if (running){
+            try{
+                Long floorHandle = sim.getObject("/Floor");
+                List<Double> floorSize = sim.getShapeBB(floorHandle);
+                floorSize.set(0, this.width);
+                floorSize.set(1, heigth);
+                sim.setShapeBB(floorHandle, floorSize);
+                List<Double> floorPos = Arrays.asList(new Double[]{this.width/2, heigth/2, -0.02});
+                sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+            } catch (CborException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public void setHeigth(double heigth){
-        if (!running)
-            this.heigth = heigth / 100.0;
+        this.heigth = heigth / 100.0;
+        if (running){
+            try{
+                Long floorHandle = sim.getObject("/Floor");
+                List<Double> floorSize = sim.getShapeBB(floorHandle);
+                floorSize.set(0, width);
+                floorSize.set(1, this.heigth);
+                sim.setShapeBB(floorHandle, floorSize);
+                List<Double> floorPos = Arrays.asList(new Double[]{width/2, this.heigth/2, -0.02});
+                sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+            } catch (CborException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public List<Double> getDSPos(){

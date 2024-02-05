@@ -213,6 +213,9 @@ public class Creature extends Identifiable {
                     case "move":
                         this.execMove((List<Double>) commandQueue.get(command));
                         break;
+                    case "moveForward":
+                        this.execMoveForward((Double) commandQueue.get(command));
+                        break;
                     case "eat":
                         thing = getThing(command, inWorldThings);
                         if (thing != null)
@@ -221,7 +224,7 @@ public class Creature extends Identifiable {
                         break;
                     case "rotate":
                         if (rotate) {
-                            this.execRotate(((boolean) commandQueue.get(command)) ? 1 : 0);
+                            this.execRotate((List<Object>) commandQueue.get(command));
                             executed.remove(command);
                         }
                         break;
@@ -289,6 +292,12 @@ public class Creature extends Identifiable {
         }
     }
 
+    public void moveForward(double v) {
+        synchronized (commandQueue) {
+            commandQueue.put("moveForward", v);
+        }
+    }
+
     /**
      * Command for agent to consume a food from the environment.
      *
@@ -317,14 +326,21 @@ public class Creature extends Identifiable {
      */
     public void rotate() {
         synchronized (commandQueue) {
-            commandQueue.put("rotate", true);
+            commandQueue.put("rotate", Arrays.asList(1, 0.02));
         }
         rotate = true;
     }
 
     public void rotate(boolean clockwise) {
         synchronized (commandQueue) {
-            commandQueue.put("rotate", clockwise);
+            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, 0.02));
+        }
+        rotate = true;
+    }
+
+    public void rotate(boolean clockwise, double vel) {
+        synchronized (commandQueue) {
+            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, vel));
         }
         rotate = true;
     }
@@ -424,6 +440,19 @@ public class Creature extends Identifiable {
         }
     }
 
+    private void execMoveForward(Double params) {
+        try {
+            double targetVel = params;
+            vel = targetVel;
+            sim.callScriptFunction("move_forward", agentScript, targetVel);
+            rotate = false;
+        } catch (CborException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Move command return");
+        }
+    }
+
     private void execEatIt(Thing food) {
         try {
             food.remove();
@@ -437,9 +466,11 @@ public class Creature extends Identifiable {
         }
     }
 
-    private void execRotate(int dir) {
+    private void execRotate(List<Object> params) {
+        int dir = (int) params.get(0);
+        double vel = (double) params.get(1);
         try {
-            sim.callScriptFunction("rotate_agent", agentScript, dir);
+            sim.callScriptFunction("rotate_agent", agentScript, dir, vel);
         } catch (CborException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
