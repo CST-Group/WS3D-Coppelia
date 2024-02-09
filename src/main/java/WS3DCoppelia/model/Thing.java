@@ -80,7 +80,7 @@ public class Thing extends Identifiable {
             Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
             Object[] response = sim.callScriptFunction("init_thing", script, category.shape(), size, pos, color);
             System.out.println(response.getClass());
-            thingHandle = ((ArrayList<Long>) response[0]).get(0);
+            thingHandle = (Long) response[0];
         } catch (CborException ex) {
             Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
         }
