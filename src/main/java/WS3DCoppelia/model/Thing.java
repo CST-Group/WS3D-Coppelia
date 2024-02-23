@@ -220,4 +220,8 @@ public class Thing extends Identifiable {
     public double getDepth() {
         return depth * scale;
     }
+
+    public boolean isPresent() {
+        return !removed && !removing;
+    }
 }

@@ -395,8 +395,10 @@ public class Agent extends Identifiable {
 
     private void execEatIt(Thing food) {
         try {
-            food.remove();
-            sim.callScriptFunction("increase_fuel", agentScript, food.energy());
+            if (food.isPresent()) {
+                food.remove();
+                sim.callScriptFunction("increase_fuel", agentScript, food.energy());
+            }
 
             rotate = false;
         } catch (CborException ex) {
