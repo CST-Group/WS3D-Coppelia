@@ -69,8 +69,17 @@ public class WS3DCoppelia {
         width = width_;
         heigth = heigth_;  
     }
-        
-    
+
+    public boolean isConnected() {
+        try {
+            sim.getSimulationTime();
+            return true;
+        } catch (Exception t){
+            return false;
+        }
+    }
+
+
     class mainTimerTask extends TimerTask {
 
         WS3DCoppelia wov;

@@ -1,0 +1,120 @@
+// Debugging
+// =================================================
+alwaysShowConsole = false
+verbosity = errors // to override console verbosity setting, use any of: default (do not override), none, errors, warnings, loadinfos, scripterrors, scriptwarnings, msgs, infos, debug, trace, tracelua or traceall
+statusbarVerbosity = errors // to override statusbar verbosity setting, use any of: default (do not override), none, errors, warnings, loadinfos, scripterrors, scriptwarnings, msgs, infos, debug, trace, tracelua or traceall
+dialogVerbosity = errors // to override dialog verbosity setting, use any of: default (do not override), none, errors, warnings, questions or infos
+timeStamp = false
+logFilter =  // leave empty for no filter. Filter format: txta1&txta2&...&txtaN|txtb1&txtb2&...&txtbN|...
+undecoratedStatusbarMessages = false
+consoleMsgsToFile = false // if true, console messages are sent to consoleMsgsFile
+consoleMsgsFile = debugLog.txt // defaults to debugLog.txt
+
+
+// Rendering
+// =================================================
+idleFps = 8
+offscreenContextType = -1 // recommended to keep -1 (-1=default, 0=Qt offscreen, 1=QGLWidget/QOpenGLWidget visible, 2=QGLWidget/QOpenGLWidget invisible).
+fboType = -1 // recommended to keep -1 (-1=default, 0=native, 1=QOpenGLFramebufferObject).
+vboOperation = -1 // recommended to keep -1 (-1=default, 0=always off, 1=on when available).
+highResDisplay = -1 // -1=none, 1=special, 2=enabled, 3=enable oglScaling and guiScaling below.
+guessedDisplayScalingThresholdFor2xOpenGl = 150 // 200=default
+oglScaling = 1 // 1=default. No effect if highResDisplay!=3 above.
+guiScaling = 1 // 1.0=default. No effect if highResDisplay!=3 above.
+hierarchyRefreshCnt = 6
+
+
+// Visual
+// =================================================
+initWindowSize = 0,0 // 0,0 for fullscreen
+initWindowPos = 0,0
+darkMode = false
+displayWorldRef = true
+guiFontSize_Win = 13 // -1=default
+guiFontSize_Mac = -1 // -1=default
+guiFontSize_Linux = 13 // -1=default
+statusbarInitiallyVisible = true
+modelBrowserInitiallyVisible = false
+sceneHierarchyInitiallyVisible = true
+sceneHierarchyHiddenDuringSimulation = false
+scriptEditorFont = "Consolas" // empty=default. e.g. "Courier New", "DejaVu Sans Mono", "Consolas", "Ubuntu Mono", etc.
+scriptEditorBoldFont = false
+scriptEditorFontSize = -1 // -1=default.
+codeColor_background = 205,205,205
+codeColor_selection = 128,128,255
+codeColor_comment = 0,140,0
+codeColor_number = 220,0,220
+codeColor_string = 48,149,186
+codeColor_character = 48,149,186
+codeColor_operator = 0,0,0
+codeColor_preprocessor = 0,128,128
+codeColor_identifier = 64,64,64
+codeColor_word = 50,50,215
+codeColor_word2 = 152,0,0
+codeColor_word3 = 220,80,20
+codeColor_word4 = 152,64,0
+
+
+// Directories
+// =================================================
+defaultDirectoryForScenes =  // absolute path, e.g. d:/myScenes (or leave empty for default path)
+defaultDirectoryForModels =  // absolute path, e.g. d:/myModels (or leave empty for default path)
+defaultDirectoryForImportExport =  // absolute path, e.g. d:/myCadFiles (or leave empty for default path)
+defaultDirectoryForMiscFiles =  // absolute path, e.g. d:/myMiscFiles (or leave empty for default path)
+
+
+// Serialization
+// =================================================
+autoSaveDelay = 2 // in minutes. 0 to disable.
+doNotWritePersistentData = false
+allowSettingsWrite = true
+
+
+// Undo/Redo
+// =================================================
+undoRedoEnabled = true
+undoRedoOnlyPartialWithCameras = true
+undoRedoLevelCount = 16
+undoRedoMaxBufferSize = 80000000
+timeInMsForUndoRedoTooLongWarning = 200
+
+
+// Messaging
+// =================================================
+doNotShowUpdateCheckMessage = true
+doNotShowProgressBars = false
+suppressStartupDialogs = true
+suppressXmlOverwriteMsg = false
+
+
+// Compatibility
+// =================================================
+showOldDlgs = false
+supportOldApiNotation = true
+
+
+// Various
+// =================================================
+preferredSandboxLang =  // python or lua
+mouseWheelZoomFactor = 2
+dynamicActivityRange = 1000
+objectTranslationStepSize = 0.025000000000000001
+objectRotationStepSize = 5
+abortScriptExecutionButton = 3 // in seconds. Zero to disable.
+triCountInOBB = 8
+identicalVertexTolerance = 9.9999999999999995e-07
+runCustomizationScripts = true
+additionalLuaPath =  // e.g. d:/myLuaRoutines
+additionalPythonPath =  // e.g. d:/myPythonRoutines
+defaultPython =  // e.g. c:/Python38/python.exe
+execUnsafe = true
+execUnsafeExt = false // same as above, but for code triggered externally. Recommended to keep false.
+externalScriptEditor = 
+xmlExportSplitSize = 0 // 0=generate a single file.
+xmlExportKnownFormats = true // true=if several files are generated, mesh and image files are saved under known formats.
+
+
+// License
+// =================================================
+license = 
+

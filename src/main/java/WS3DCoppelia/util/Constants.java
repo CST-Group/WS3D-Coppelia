@@ -130,7 +130,8 @@ public class Constants {
             + "            \n"
             + "    \n"
             + "    if not is_npc:\n"
-            + "        sim.setFloatSignal(fuel_id, fuel - 0.1)\n"
+            + "        fuel = max(0, fuel - 0.1)\n"
+            + "        sim.setFloatSignal(fuel_id, fuel)\n"
             + "\n"
             + "def sysCall_sensing():\n"
             + "    # put your sensing code here\n"
@@ -270,11 +271,11 @@ public class Constants {
         /**
          * Perishable food. Red sphere.
          */
-        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.RED, 300, "P_Food", 21),
+        PFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.RED, 300, "PFood", 21),
         /**
          * Non-perishable food. Brown sphere.
          */
-        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.ORANGE, 150, "NP_Food", 22);
+        NPFOOD(RemoteAPIObjects._sim.primitiveshape_spheroid, Color.ORANGE, 150, "NPFood", 22);
 
         private final int shape;
         private final Color color;
@@ -301,21 +302,19 @@ public class Constants {
     }
 
     public enum JewelTypes implements ThingsType{
-        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.RED, "Red_Jewel"),
-        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.GREEN, "Green_Jewel"),
-        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.BLUE, "Blue_Jewel"),
-        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.YELLOW, "Yellow_Jewel"),
-        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.MAGENTA, "Magenta_Jewel"),
-        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.WHITE, "White_Jewel");
+        RED_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.RED),
+        GREEN_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.GREEN),
+        BLUE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.BLUE),
+        YELLOW_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.YELLOW),
+        MAGENTA_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.MAGENTA),
+        WHITE_JEWEL(RemoteAPIObjects._sim.primitiveshape_cone, Color.WHITE);
 
         private final int shape;
         private final Color color;
-        private final String type_name;
 
-        JewelTypes(int shape, Color color, String name){
+        JewelTypes(int shape, Color color){
             this.shape = shape;
             this.color = color;
-            this.type_name = name;
         }
 
         @Override
@@ -323,30 +322,28 @@ public class Constants {
         @Override
         public Color color() { return color; }
         @Override
-        public String typeName() { return type_name; }
+        public String typeName() { return "Jewel"; }
         @Override
         public int socketCategory() { return 3; }
     }
 
     public enum BrickTypes implements ThingsType{
-        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.RED, "Red_Brick"),
-        BLUE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BLUE, "Blue_Brick"),
-        GREEN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREEN, "Green_Brick"),
-        YELLOW_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.YELLOW, "Yellow_Brick"),
-        MAGENTA_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.MAGENTA, "Magenta_Brick"),
-        WHITE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.WHITE, "White_Brick"),
-        ORANGE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.ORANGE, "Orange_Brick"),
-        GREY_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREY, "Grey_Brick"),
-        BROWN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BROWN, "Brown_Brick");
+        RED_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.RED),
+        BLUE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BLUE),
+        GREEN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREEN),
+        YELLOW_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.YELLOW),
+        MAGENTA_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.MAGENTA),
+        WHITE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.WHITE),
+        ORANGE_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.ORANGE),
+        GREY_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.GREY),
+        BROWN_BRICK(RemoteAPIObjects._sim.primitiveshape_cuboid, Color.BROWN);
 
         private final int shape;
         private final Color color;
-        private final String type_name;
 
-        BrickTypes(int shape, Color color, String name){
+        BrickTypes(int shape, Color color){
             this.shape = shape;
             this.color = color;
-            this.type_name = name;
         }
 
         @Override
@@ -354,7 +351,7 @@ public class Constants {
         @Override
         public Color color() { return color; }
         @Override
-        public String typeName() { return type_name; }
+        public String typeName() { return "Brick"; }
         @Override
         public int socketCategory() { return 1; }
     }
