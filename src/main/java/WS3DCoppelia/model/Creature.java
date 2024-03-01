@@ -224,7 +224,11 @@ public class Creature extends Identifiable {
                         break;
                     case "rotate":
                         if (rotate) {
-                            this.execRotate((List<Object>) commandQueue.get(command));
+                            List<Object> params = (List<Object>) commandQueue.get(command);
+                            this.execRotate(params);
+                            double linVel = (double) params.get(2);
+                            if (linVel != 0)
+                                this.execMoveForward(linVel);
                             executed.remove(command);
                         }
                         break;
@@ -236,6 +240,9 @@ public class Creature extends Identifiable {
                     case "deliver":
                         System.out.println("Exec Deliver");
                         this.execDeliver((Integer) commandQueue.get(command));
+                        break;
+                    case "start":
+                        this.execStart();
                         break;
                     case "stop":
                         this.execStop();
@@ -333,14 +340,21 @@ public class Creature extends Identifiable {
 
     public void rotate(boolean clockwise) {
         synchronized (commandQueue) {
-            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, 0.02));
+            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, 0.02, 0.0));
         }
         rotate = true;
     }
 
     public void rotate(boolean clockwise, double vel) {
         synchronized (commandQueue) {
-            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, vel));
+            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, vel, 0.0));
+        }
+        rotate = true;
+    }
+
+    public void rotate(boolean clockwise, double vel, double linVel) {
+        synchronized (commandQueue) {
+            commandQueue.put("rotate", Arrays.asList(clockwise?1:0, vel, linVel));
         }
         rotate = true;
     }
@@ -415,15 +429,21 @@ public class Creature extends Identifiable {
         }
     }
 
+    public void start() {
+        synchronized (commandQueue) {
+            commandQueue.put("start", null);
+        }
+    }
+
     private void execMove(List<Double> params) {
         try {
-            double targetVel = params.get(0);
+            double targetVel = Math.min(0.08,params.get(0));
             vel = targetVel;
             double goalX = params.get(1);
             double goalY = params.get(2);
 
-            goalX = (goalX > xLimit) ? xLimit : (goalX < 0.1f ? 0.1f : goalX);
-            goalY = (goalY > yLimit) ? yLimit : (goalY < 0.1f ? 0.1f : goalY);
+            goalX = (goalX > xLimit-0.1f) ? xLimit-0.1f : (goalX < 0.1f ? 0.1f : goalX);
+            goalY = (goalY > yLimit-0.1f) ? yLimit-0.1f : (goalY < 0.1f ? 0.1f : goalY);
             double goalPitch = Math.atan2(goalY - pos.get(1), goalX - pos.get(0));
 
             List<Double> targetPos = Arrays.asList(new Double[]{goalX, goalY,  0.0});
@@ -442,7 +462,7 @@ public class Creature extends Identifiable {
 
     private void execMoveForward(Double params) {
         try {
-            double targetVel = params;
+            double targetVel = Math.min(0.08,params);
             vel = targetVel;
             sim.callScriptFunction("move_forward", agentScript, targetVel);
             rotate = false;
@@ -455,8 +475,10 @@ public class Creature extends Identifiable {
 
     private void execEatIt(Thing food) {
         try {
-            food.remove();
-            sim.callScriptFunction("increase_fuel", agentScript, food.energy());
+            if (food.isPresent()) {
+                food.remove();
+                sim.callScriptFunction("increase_fuel", agentScript, food.energy());
+            }
 
             rotate = false;
         } catch (CborException ex) {
@@ -475,6 +497,17 @@ public class Creature extends Identifiable {
             Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ArrayIndexOutOfBoundsException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Rotate command return");
+        }
+    }
+
+    private void execStart() {
+        try {
+            sim.callScriptFunction("start_agent", agentScript);
+            rotate = false;
+        } catch (CborException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Stop command return");
         }
 
     }
@@ -651,4 +684,5 @@ public class Creature extends Identifiable {
     public int ifHasActiveLeaflet() {
         return getActiveLeaflets().isEmpty() ? 0 : 1;
     }
+
 }

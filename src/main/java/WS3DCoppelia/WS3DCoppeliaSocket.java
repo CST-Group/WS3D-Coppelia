@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import WS3DCoppelia.util.*;
 import WS3DCoppelia.model.*;
@@ -417,6 +418,7 @@ public class WS3DCoppeliaSocket {
         Creature c = getCreatureFromID(st);
         if (c == null) return;
 
+        log.info(">>>>>>>>Server sending: " + c.getBag().getContenteDescription());
         getOutBuffer().append(c.getBag().getContenteDescription());
 
     }
@@ -625,8 +627,9 @@ public class WS3DCoppeliaSocket {
                 return;
             }
 
-            Creature c = mySim.getAllCreatures().stream().filter(e -> e.getId() == creatID).findFirst().orElseGet(null);
+            Creature c = mySim.getAllCreatures().stream().filter(e -> e.getId() == creatID).findFirst().orElse(null);
             if (c == null) {
+                System.out.println("Creature ID " + creatID + " not found! Exiting IDs: " + mySim.getAllCreatures().stream().map(Creature::getId).collect(Collectors.toList()));
                 getOutBuffer().append(Constants.ERROR_CODE + " Creature does not exist.");
                 return;
             }
@@ -635,8 +638,8 @@ public class WS3DCoppeliaSocket {
             StringBuffer lp = new StringBuffer("");
             StringBuffer vs = new StringBuffer("");
             lp.append(" ");
-            lp.append(c.getActiveLeaflets().size()); //number of leaflets not delivered yet
-            ListIterator<Leaflet> iterator = c.getActiveLeaflets().listIterator();
+            lp.append(c.getLeaflets().length); //number of leaflets not delivered yet
+            Iterator<Leaflet> iterator = Arrays.stream(c.getLeaflets()).iterator();
             Leaflet leaflet;
             while (iterator.hasNext()) {
                 lp.append(" ");
@@ -1050,11 +1053,11 @@ public class WS3DCoppeliaSocket {
 
             double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
             if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                c.rotate(false, vel/100.0);
+                c.rotate(false, vel/100.0, Double.parseDouble(speed));
             else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                c.rotate(true, vel/100.0);
+                c.rotate(true, vel/100.0, Double.parseDouble(speed));
             else
-                c.stop();
+                c.moveForward(Double.parseDouble(speed)/ 100.0);
 
             log.info("Pitch changed to (in degrees)= " + Math.toDegrees(c.getPitch()));
             getOutBuffer().append("" + c.getSpeed() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
@@ -1757,6 +1760,8 @@ public class WS3DCoppeliaSocket {
         Creature c = getCreatureFromID(st);
         if (c == null) return;
 
+        c.start();
+
         getOutBuffer().append("\r\n Run creature run...\r\n");
     }
 
@@ -1964,6 +1969,7 @@ public class WS3DCoppeliaSocket {
         }
         if (creatID < 0 || creatID > mySim.getAllCreatures().size() - 1) {
             getOutBuffer().append(Constants.ERROR_CODE + " Creature ID does not exist.\r\n");
+            log.info(">>>>>>>>Server sending: " + Constants.ERROR_CODE + " Creature ID does not exist.\r\n");
             return null;
         }
         Creature c = mySim.getAllCreatures().get(creatID);

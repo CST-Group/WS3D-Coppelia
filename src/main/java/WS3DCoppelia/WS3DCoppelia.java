@@ -29,7 +29,7 @@ public class WS3DCoppelia {
     private Timer t;
     private List<Creature> inWorldCreatures = Collections.synchronizedList(new LinkedList<>());
     private List<Thing> inWorldThings = Collections.synchronizedList(new LinkedList<>());
-    private double width = 12, heigth = 12;
+    private double width = 8, heigth = 6;
     private Long worldScript;
     private boolean running = false;
     private Thing currentDS;
@@ -352,7 +352,7 @@ public class WS3DCoppelia {
     }
 
     public void setHeigth(double heigth){
-        this.heigth = heigth / 100.0;
+        this.heigth = heigth / 1000.0;
         if (running){
             try{
                 Long floorHandle = sim.getObject("/Floor");
@@ -370,7 +370,7 @@ public class WS3DCoppelia {
 
     public List<Double> getDSPos(){
         if (currentDS != null)
-            return currentDS.getPos();
+            return Arrays.asList(currentDS.getX(), currentDS.getY());
         return Arrays.asList(0.0, 0.0);
     }
 }

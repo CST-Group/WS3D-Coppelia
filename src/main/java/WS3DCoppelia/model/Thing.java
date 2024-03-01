@@ -291,4 +291,7 @@ public class Thing extends Identifiable {
 
     public boolean isHidden() { return hidden;}
 
+    public boolean isPresent() {
+        return !removed && !removing;
+    }
 }
