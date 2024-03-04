@@ -60,6 +60,7 @@ public class WS3DCoppeliaSocket {
 
     public WS3DCoppeliaSocket() {
         log = Logger.getLogger(WS3DCoppeliaSocket.class.getCanonicalName());
+        log.setLevel(Level.SEVERE);
         Logger.getLogger("com.jme").setLevel(Level.OFF);
         Logger.getLogger("com.jmex").setLevel(Level.OFF);
         Logger.getLogger("worldserver3d").setLevel(Level.WARNING);
