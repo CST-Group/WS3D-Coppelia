@@ -60,4 +60,4 @@ docker run --rm -it --privileged -e DISPLAY=<MY-WSL-IP>:0 -p 4011:4011 brgsil/ws
 
 * **Docker Engine not starting | Cannot find WSL ip address**
 
-Before executing Docker Desktop,  make sure the WSL is curruntly running. This can be verified openning Windows Powershell and executing '''wsl -l -v'''. The Ubuntu distro should have the status 'Running', if not execute WSl from a command prompt.
+Before executing Docker Desktop,  make sure the WSL is curruntly running. This can be verified openning Windows Powershell and executing '''wsl -l -v'''. The Ubuntu distro should have the status 'Running', if not execute WSL from a command prompt.
