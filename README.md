@@ -1,7 +1,7 @@
 # WS3D with CoppeliaSim
 Version of WS3D to run with CoppeliaSim robotics simulator
 
-## 🚀 Pre-requirements
+## 🚀 Requirements
 
 To run the simulator, Docker Engine must be installed on your system. If you haven't yet installed the Docker Engine, follow the installation instructions below:
 
@@ -53,5 +53,11 @@ The `docker.sh` script will start the container and initialize CoppeliaSim with 
     3. Copy the IPv4 address
 5. Still at the Command Prompt, start the Docker container with the following command, inserting the ip you copied earlier into the `<MY-WSL-IP>` tag
 ```
-docker run --rm -it --privileged -v \\wsl$\Ubuntu\mnt\wslg:/mnt/wslg/ -e DISPLAY=<MY-WSL-IP>:0 -p 4011:4011 brgsil/ws3d-coppelia
+docker run --rm -it --privileged -e DISPLAY=<MY-WSL-IP>:0 -p 4011:4011 brgsil/ws3d-coppelia
 ```
+
+#### Troubleshooting
+
+* **Docker Engine not starting | Cannot find WSL ip address**
+
+Before executing Docker Desktop,  make sure the WSL is curruntly running. This can be verified openning Windows Powershell and executing '''wsl -l -v'''. The Ubuntu distro should have the status 'Running', if not execute WSl from a command prompt.
