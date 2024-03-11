@@ -129,6 +129,7 @@ public class WS3DCoppelia {
                 System.out.println("Already Stopped");
             }
             t.cancel();
+            running = false;
         }
     }
 
@@ -193,6 +194,7 @@ public class WS3DCoppelia {
      */
     public void stopSimulation() throws CborException{
         sim.stopSimulation();
+        running = false;
     }
 
     /**

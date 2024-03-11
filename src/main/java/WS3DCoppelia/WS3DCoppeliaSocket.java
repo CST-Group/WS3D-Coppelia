@@ -925,9 +925,9 @@ public class WS3DCoppeliaSocket {
                     getOutBuffer().append(Constants.ERROR_CODE + " Thing to be hidden is missing");
                     return;
                 }
-                String[] thingId = thingName.split("_");
-                if (thingId.length > 1) {
-                    c.hide(Integer.parseInt(thingId[thingId.length - 1]));
+                String thingId = thingName.replaceAll("[^0-9]","");
+                if (!thingId.equals("")) {
+                    c.hide(Integer.parseInt(thingId));
                 }
                 getOutBuffer().append("" + thingName + "\r\n");
 
@@ -955,9 +955,9 @@ public class WS3DCoppeliaSocket {
                     return;
                 }
 
-                String[] thingId = thingName.split("_");
-                if (thingId.length > 1) {
-                    c.unhide(Integer.parseInt(thingId[thingId.length - 1]));
+                String thingId = thingName.replaceAll("[^0-9]","");
+                if (!thingId.equals("")) {
+                    c.unhide(Integer.parseInt(thingId));
                 }
                 getOutBuffer().append("" + thingName + "\r\n");
 
@@ -967,7 +967,6 @@ public class WS3DCoppeliaSocket {
         catch (Exception e) {
             e.printStackTrace();
         }
-        getOutBuffer().append("Not Implemented \r\n");
 
     }
 
