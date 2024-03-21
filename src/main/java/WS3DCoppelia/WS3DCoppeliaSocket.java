@@ -36,6 +36,7 @@ import WS3DCoppelia.model.*;
 import co.nstant.in.cbor.CborException;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+import scala.Int;
 
 import static WS3DCoppelia.util.Constants.FoodTypes.NPFOOD;
 import static WS3DCoppelia.util.Constants.FoodTypes.PFOOD;
@@ -116,6 +117,7 @@ public class WS3DCoppeliaSocket {
                 }
                 socket.close();
             } catch (Exception t) {
+                t.printStackTrace();
                 String reason = t.getMessage();
                 if (reason != null)
                     if (reason.equalsIgnoreCase("Connection reset") == false)
@@ -676,7 +678,7 @@ public class WS3DCoppeliaSocket {
                     + c.getX2() + " "
                     + c.getY2() + " "
                     + c.getColor() + " "
-                    + "{\"ACTION\":\"NONE\",\"THING_DATA=\":{}} " //Not used
+                    + "NONE " //Not used
                     + "0 "
                     + c.ifHasActiveLeaflet() + " "
                     + lp //leaflet pool
@@ -790,7 +792,7 @@ public class WS3DCoppeliaSocket {
                 }
 
                 double vel = (Double.parseDouble(vr) + Double.parseDouble(vl)) / 2;
-                c.moveTo(vel/100.0, Double.parseDouble(xf) / 100.0, Double.parseDouble(yf) / 100.0);
+                c.moveTo(vel / 100.0, Double.parseDouble(xf) / 100.0, Double.parseDouble(yf) / 100.0);
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
             } //end syncronized
@@ -838,11 +840,11 @@ public class WS3DCoppeliaSocket {
 
                 double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
                 if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                    c.rotate(false, vel/100.0);
+                    c.rotate(false, vel / 100.0);
                 else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                    c.rotate(true, vel/100.0);
+                    c.rotate(true, vel / 100.0);
                 else {
-                    c.moveForward(vel/ 100.0);
+                    c.moveForward(vel / 100.0);
                 }
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Double.parseDouble(w) + "\r\n");
@@ -925,7 +927,7 @@ public class WS3DCoppeliaSocket {
                     getOutBuffer().append(Constants.ERROR_CODE + " Thing to be hidden is missing");
                     return;
                 }
-                String thingId = thingName.replaceAll("[^0-9]","");
+                String thingId = thingName.replaceAll("[^0-9]", "");
                 if (!thingId.equals("")) {
                     c.hide(Integer.parseInt(thingId));
                 }
@@ -955,7 +957,7 @@ public class WS3DCoppeliaSocket {
                     return;
                 }
 
-                String thingId = thingName.replaceAll("[^0-9]","");
+                String thingId = thingName.replaceAll("[^0-9]", "");
                 if (!thingId.equals("")) {
                     c.unhide(Integer.parseInt(thingId));
                 }
@@ -1053,11 +1055,11 @@ public class WS3DCoppeliaSocket {
 
             double vel = (Math.abs(Double.parseDouble(vr)) + Math.abs(Double.parseDouble(vl))) / 2.0;
             if (Double.parseDouble(vr) > Double.parseDouble(vl))
-                c.rotate(false, vel/100.0, Double.parseDouble(speed));
+                c.rotate(false, vel / 100.0, Double.parseDouble(speed));
             else if (Double.parseDouble(vr) < Double.parseDouble(vl))
-                c.rotate(true, vel/100.0, Double.parseDouble(speed));
+                c.rotate(true, vel / 100.0, Double.parseDouble(speed));
             else
-                c.moveForward(Double.parseDouble(speed)/ 100.0);
+                c.moveForward(Double.parseDouble(speed) / 100.0);
 
             log.info("Pitch changed to (in degrees)= " + Math.toDegrees(c.getPitch()));
             getOutBuffer().append("" + c.getSpeed() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
@@ -1389,18 +1391,14 @@ public class WS3DCoppeliaSocket {
     //1: Creature
     void ProcessDeleteThing(StringTokenizer st) {
         int type = -1;
-        int thingID = -1;
         if (st.hasMoreTokens()) {
             type = Integer.parseInt(st.nextToken());
-            if (type == 0) { //object
-                if (st.hasMoreTokens()) {
-                    thingID = Integer.parseInt(st.nextToken());
+
+            if (st.hasMoreTokens()) {
+                int thingID = Integer.parseInt(st.nextToken().split("_")[1]);
+                if (type == 0) { //object
                     if (mySim.getAllThings().size() > 0) {
-                        if (thingID < 0 || thingID > mySim.getAllThings().size() - 1) {
-                            getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
-                            return;
-                        }
-                        Thing th = mySim.getAllThings().get(thingID);
+                        Thing th = mySim.getAllThings().stream().filter(e -> e.getId() == thingID).findFirst().orElse(null);
                         if ((th != null)) {
                             try {
                                 th.remove();
@@ -1414,38 +1412,30 @@ public class WS3DCoppeliaSocket {
                         return;
                     }
 
-                } else {
-                    getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
-                }
-            } else if (type == 1) { //Creature
-                if (st.hasMoreTokens()) {
-                    thingID = Integer.parseInt(st.nextToken());
+                } else if (type == 1) { //Creature
                     if (mySim.getAllCreatures().size() > 0) {
-                        if (thingID < 0 || thingID > mySim.getAllCreatures().size() - 1) {
-                            getOutBuffer().append(Constants.ERROR_CODE + " Creature does not exist. Try again!");
-                            return;
-                        }
-
-                        Creature th = mySim.getAllCreatures().get(thingID);
+                        Creature th = mySim.getAllCreatures().stream().filter(e -> e.getId() == thingID).findFirst().orElse(null);
 
                         getOutBuffer().append("" + th.getName() + "\r\n");
-                        th.setRemove(true);
+                        if (th != null) {
+                            th.setRemove(true);
+                        } else {
+                            getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
+                            return;
+                        }
                     } else {
                         getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
                         return;
                     }
 
                 } else {
-                    getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
+                    getOutBuffer().append(Constants.ERROR_CODE + " ... Type is invalid!");
                     return;
                 }
-            } else {
-                getOutBuffer().append(Constants.ERROR_CODE + " ... Type is invalid!");
-                return;
-            }
 
-        } else {
-            getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
+            } else {
+                getOutBuffer().append(Constants.ERROR_CODE + " ... No recognized command");
+            }
         }
     }
 

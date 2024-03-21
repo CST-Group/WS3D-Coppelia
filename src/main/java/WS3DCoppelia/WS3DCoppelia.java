@@ -125,7 +125,7 @@ public class WS3DCoppelia {
             inWorldThings = Collections.synchronizedList(new LinkedList<>());
             try {
                 sim.stopSimulation();
-            } catch (CborException ex) {
+            } catch (Exception ex) {
                 System.out.println("Already Stopped");
             }
             t.cancel();

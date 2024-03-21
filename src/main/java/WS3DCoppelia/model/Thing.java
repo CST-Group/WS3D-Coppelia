@@ -9,6 +9,8 @@ import static WS3DCoppelia.util.Constants.THING_SIZE;
 import WS3DCoppelia.util.Constants.ThingsType;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
+import org.zeromq.ZMQException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -191,10 +193,14 @@ public class Thing extends Identifiable {
 
     public void remove() throws CborException{
         //sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
-        Long floorHandle =  sim.getObject("/Floor");
-        Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-        sim.callScriptFunction("remove_thing", script, this.thingHandle);
-        removing = true;
+        try {
+            Long floorHandle = sim.getObject("/Floor");
+            Long script = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+            sim.callScriptFunction("remove_thing", script, this.thingHandle);
+            removing = true;
+        } catch (ZMQException ex){
+            this.remove();
+        }
     }
 
     public void hide() throws CborException {
