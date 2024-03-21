@@ -106,12 +106,16 @@ public class WS3DCoppeliaSocket {
                 out.println(processMessage("version"));
                 while (cond == 0) {
                     inputLine = in.readLine();
-                    outputLine = processMessage(inputLine);
-                    out.println(outputLine);
-                    if (inputLine.equals("shutdown")) {
-                        System.exit(0);
-                    }
-                    if (inputLine.equals("quit")) {
+                    if(inputLine != null) {
+                        outputLine = processMessage(inputLine);
+                        out.println(outputLine);
+                        if (inputLine.equals("shutdown")) {
+                            System.exit(0);
+                        }
+                        if (inputLine.equals("quit")) {
+                            cond = 1;
+                        }
+                    } else {
                         cond = 1;
                     }
                 }
@@ -1264,7 +1268,7 @@ public class WS3DCoppeliaSocket {
         String s, motor;
         double x, y, pitch;
         int motorSys;
-        boolean color = false;
+        int color = 0;
         if (st.hasMoreTokens()) {
             s = st.nextToken();
             x = Double.parseDouble(s);
@@ -1276,10 +1280,23 @@ public class WS3DCoppeliaSocket {
                     pitch = Double.parseDouble(s);
                     if (st.hasMoreTokens()) {
                         s = st.nextToken();
-                        if (s.equalsIgnoreCase("1")) color = true;
+                        color = Integer.parseInt(s);
                     }
 
-                    Creature c = mySim.createAgent(x / 100.0, y / 100.0);
+                    Constants.Color agentColor = Constants.Color.AGENT_YELLOW;
+                    switch (color){
+                        case 1:
+                            agentColor = Constants.Color.AGENT_RED;
+                            break;
+                        case 2:
+                            agentColor = Constants.Color.AGENT_GREEN;
+                            break;
+                        case 3:
+                            agentColor = Constants.Color.AGENT_MAGENTA;
+                            break;
+                    }
+
+                    Creature c = mySim.createAgent(x / 100.0, y / 100.0, agentColor);
 
                     getOutBuffer().append("" + mySim.getAllCreatures().indexOf(c) + " " + c.getName() + " " + c.getX() + " " + c.getY() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
 
@@ -1392,7 +1409,12 @@ public class WS3DCoppeliaSocket {
     void ProcessDeleteThing(StringTokenizer st) {
         int type = -1;
         if (st.hasMoreTokens()) {
-            type = Integer.parseInt(st.nextToken());
+            String s = st.nextToken();
+            try {
+                type = Integer.parseInt(s);
+            } catch (NumberFormatException ex){
+                getOutBuffer().append(Constants.ERROR_CODE + "Expected an integer! Received instead: "+s);
+            }
 
             if (st.hasMoreTokens()) {
                 int thingID = Integer.parseInt(st.nextToken().split("_")[1]);
@@ -1400,12 +1422,11 @@ public class WS3DCoppeliaSocket {
                     if (mySim.getAllThings().size() > 0) {
                         Thing th = mySim.getAllThings().stream().filter(e -> e.getId() == thingID).findFirst().orElse(null);
                         if ((th != null)) {
-                            try {
-                                th.remove();
+                                th.setToRemove();
                                 getOutBuffer().append("" + th.getName() + "\r\n");
-                            } catch (CborException e) {
-                                getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
-                            }
+                        }else {
+                            getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");
+                            return;
                         }
                     } else {
                         getOutBuffer().append(Constants.ERROR_CODE + " Object does not exist. Try again!");

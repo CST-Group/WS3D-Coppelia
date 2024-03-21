@@ -95,7 +95,7 @@ supportOldApiNotation = true
 
 // Various
 // =================================================
-preferredSandboxLang =  // python or lua
+preferredSandboxLang =  Python// python or lua
 mouseWheelZoomFactor = 2
 dynamicActivityRange = 1000
 objectTranslationStepSize = 0.025000000000000001

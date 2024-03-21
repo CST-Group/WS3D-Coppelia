@@ -30,6 +30,7 @@ public class Thing extends Identifiable {
     private RemoteAPIObjects._sim sim;
     private long thingHandle;
     private List<Double> pos;
+    public boolean toRemove = false;
     public boolean removing = false;
     public boolean removed = false;
 
@@ -119,6 +120,14 @@ public class Thing extends Identifiable {
     }
 
     private void updateState(){
+        if (toRemove) {
+            try {
+                this.remove();
+                toRemove = false;
+            } catch (CborException ex) {
+                Logger.getLogger(Thing.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         if (removing) {
             try {
                 if (sim.isHandle(this.thingHandle))
@@ -191,7 +200,10 @@ public class Thing extends Identifiable {
         return 0;
     }
 
-    public void remove() throws CborException{
+    public void setToRemove(){
+        toRemove = true;
+    }
+    private void remove() throws CborException{
         //sim.removeObjects(Arrays.asList(new Long[]{thingHandle}));
         try {
             Long floorHandle = sim.getObject("/Floor");
@@ -199,6 +211,11 @@ public class Thing extends Identifiable {
             sim.callScriptFunction("remove_thing", script, this.thingHandle);
             removing = true;
         } catch (ZMQException ex){
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+
+            }
             this.remove();
         }
     }

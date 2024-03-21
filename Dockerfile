@@ -20,7 +20,7 @@ RUN mkdir -p /shared /opt
 RUN pip3 install pyzmq cbor
 
 COPY ./coppelia/CoppeliaPlayer_4_6_rev8.tar.xz /opt/
-#COPY ./coppelia/usrset.txt /root/.CoppeliaSim/
+COPY ./coppelia/usrset.txt /root/.CoppeliaSim/
 RUN tar -xf /opt/CoppeliaPlayer_4_6_rev8.tar.xz -C /opt && \
     rm /opt/CoppeliaPlayer_4_6_rev8.tar.xz
 

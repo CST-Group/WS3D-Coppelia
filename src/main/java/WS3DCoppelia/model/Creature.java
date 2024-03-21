@@ -476,7 +476,7 @@ public class Creature extends Identifiable {
     private void execEatIt(Thing food) {
         try {
             if (food.isPresent()) {
-                food.remove();
+                food.setToRemove();
                 sim.callScriptFunction("increase_fuel", agentScript, food.energy());
             }
 
@@ -525,17 +525,13 @@ public class Creature extends Identifiable {
     }
 
     private void execSackIt(Thing thing) {
-        try {
             if (thing.isCollectable()) {
-                thing.remove();
+                thing.setToRemove();
                 bag.insertItem(thing.thingType(), 1);
                 for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
                     leaflets[i].updateProgress(bag);
                 }
             }
-        } catch (CborException ex) {
-            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     private void execDeliver(int leafletId) {
