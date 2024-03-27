@@ -862,7 +862,7 @@ public class WS3DCoppeliaSocket {
                 else if (Double.parseDouble(vr) < Double.parseDouble(vl))
                     c.rotate(true, vel / 100.0);
                 else {
-                    c.moveForward(vel / 100.0);
+                    c.moveForward(Double.parseDouble(vr) / 100.0);
                 }
 
                 getOutBuffer().append("" + c.getSpeed() + " " + Double.parseDouble(w) + "\r\n");
