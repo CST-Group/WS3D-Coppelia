@@ -239,6 +239,18 @@ public class WS3DCoppelia {
         return newAgent;
     }
 
+    public Creature createAgent(double x, double y, Color color, double pitch){
+        //Ensures limit
+        x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
+        y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
+
+        Creature newAgent = new Creature(sim, x, y, width, heigth, color, pitch);
+        synchronized(inWorldCreatures){
+            inWorldCreatures.add(newAgent);
+        }
+        return newAgent;
+    }
+
     public Creature createNPCAgent(double x, double y, Color color){
         //Ensures limit
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );

@@ -87,11 +87,23 @@ public class Creature extends Identifiable {
         }
     }
 
+    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_, double pitch) {
+        color = color_;
+        currColor = color.rgb();
+        sim = sim_;
+        pos = Arrays.asList(new Double[]{x, y,  0.16});
+        ori = Arrays.asList(new Double[]{ 0.0,  0.0,  pitch});
+        xLimit = width;
+        yLimit = heigth;
+        for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
+            leaflets[i] = new Leaflet();
+        }
+    }
     private void init() {
         try {
             agentHandle = sim.loadModel(System.getProperty("user.dir") + "/agent_model.ttm");
 
-            Object[] response = sim.callScriptFunction("init_agent", worldScript, agentHandle, pos, ori, Constants.BASE_SCRIPT, color.rgb(), isNPC ? "True" : "False");
+            Object[] response = sim.callScriptFunction("init_agent", worldScript, agentHandle, getId(), pos, ori, Constants.BASE_SCRIPT, color.rgb(), isNPC ? "True" : "False");
             agentScript = (long) response[0];
         } catch (CborException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);

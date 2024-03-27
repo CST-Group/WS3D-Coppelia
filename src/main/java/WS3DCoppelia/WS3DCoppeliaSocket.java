@@ -207,6 +207,8 @@ public class WS3DCoppeliaSocket {
             ProcessSetDifferentialStatus3DT(st);
         } else if (command.equalsIgnoreCase(("leaflet"))) {
             ProcessSetLeaflet(st);
+        } else if (command.equalsIgnoreCase(("genleaflet"))) {
+            ProcessGenLeaflet(st);
         } else if (command.equalsIgnoreCase(("deliver"))) {
             ProcessDeliverLeaflet(st);
         } else if (command.equalsIgnoreCase("newDeliverySpot")) {
@@ -257,6 +259,18 @@ public class WS3DCoppeliaSocket {
             getOutBuffer().append(Constants.ERROR_CODE + " ... Cannot understand " + command);
         }
         return getOutBuffer().toString();
+    }
+
+    private void ProcessGenLeaflet(StringTokenizer st) {
+        Creature c = getCreatureFromID(st);
+        if (c == null) return;
+
+        c.generateNewLeaflets();
+
+        getOutBuffer().append(" \r\n");
+        for (Leaflet l : c.getLeaflets()) {
+            getOutBuffer().append(l.toStringFormatted());
+        }
     }
 
     /*
@@ -1296,7 +1310,7 @@ public class WS3DCoppeliaSocket {
                             break;
                     }
 
-                    Creature c = mySim.createAgent(x / 100.0, y / 100.0, agentColor);
+                    Creature c = mySim.createAgent(x / 100.0, y / 100.0, agentColor, pitch);
 
                     getOutBuffer().append("" + mySim.getAllCreatures().indexOf(c) + " " + c.getName() + " " + c.getX() + " " + c.getY() + " " + Math.toDegrees(c.getPitch()) + "\r\n");
 
