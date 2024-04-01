@@ -19,10 +19,11 @@ RUN mkdir -p /shared /opt
 
 RUN pip3 install pyzmq cbor
 
-COPY ./coppelia/CoppeliaPlayer_4_6_rev8.tar.xz /opt/
+COPY ./coppelia/CoppeliaSim_Player_V4_6_0_rev18_Ubuntu22_04.tar.xz /opt/
 COPY ./coppelia/usrset.txt /root/.CoppeliaSim/
-RUN tar -xf /opt/CoppeliaPlayer_4_6_rev8.tar.xz -C /opt && \
-    rm /opt/CoppeliaPlayer_4_6_rev8.tar.xz
+RUN tar -xf /opt/CoppeliaSim_Player_V4_6_0_rev18_Ubuntu22_04.tar.xz -C /opt && \
+    rm /opt/CoppeliaSim_Player_V4_6_0_rev18_Ubuntu22_04.tar.xz && \
+    mv /opt/CoppeliaSim_Player_V4_6_0_rev18_Ubuntu22_04 /opt/CoppeliaPlayer_4_6
 
 ENV COPPELIASIM_ROOT_DIR=/opt/CoppeliaPlayer_4_6
 ENV LD_LIBRARY_PATH=$COPPELIASIM_ROOT_DIR:$LD_LIBRARY_PATH
