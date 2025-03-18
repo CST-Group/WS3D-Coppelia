@@ -5,7 +5,6 @@
 package WS3DCoppelia.util;
 
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.Arrays;
 import java.util.List;

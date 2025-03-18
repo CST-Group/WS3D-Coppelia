@@ -8,7 +8,6 @@ import WS3DCoppelia.util.Constants;
 import WS3DCoppelia.util.Constants.*;
 import co.nstant.in.cbor.CborException;
 import com.coppeliarobotics.remoteapi.zmq.RemoteAPIObjects;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,7 +185,7 @@ public class Creature extends Identifiable {
                     List<Identifiable> thingsSeen = new ArrayList<>();
                     synchronized (inWorldThings) {
                         for (Thing thing : inWorldThings) {
-                            if (thing.isIncluded(objectsInVision)) {
+                            if (thing.isIncluded(objectsInVision) && !thing.isHidden()) {
                                 thingsSeen.add(thing);
                             }
                         }
@@ -277,7 +276,6 @@ public class Creature extends Identifiable {
         }
     }
 
-    @Nullable
     private Thing getThing(String command, List<Thing> inWorldThings) {
         if (commandQueue.get(command) instanceof Integer)
             return inWorldThings.stream()

@@ -34,9 +34,6 @@ import java.util.stream.Collectors;
 import WS3DCoppelia.util.*;
 import WS3DCoppelia.model.*;
 import co.nstant.in.cbor.CborException;
-import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
-import scala.Int;
 
 import static WS3DCoppelia.util.Constants.FoodTypes.NPFOOD;
 import static WS3DCoppelia.util.Constants.FoodTypes.PFOOD;
@@ -1984,7 +1981,6 @@ public class WS3DCoppeliaSocket {
         } while (t1 - t0 < 1);
     }
 
-    @Nullable
     private Creature getCreatureFromID(StringTokenizer st) {
         int creatID = -1;
         String cID;
