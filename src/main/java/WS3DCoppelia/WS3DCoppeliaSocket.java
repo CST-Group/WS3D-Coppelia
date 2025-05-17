@@ -1292,18 +1292,31 @@ public class WS3DCoppeliaSocket {
                     if (st.hasMoreTokens()) {
                         s = st.nextToken();
                         color = Integer.parseInt(s);
+                        if ((color < 0) || (color > 5)) {
+                            getOutBuffer().append(Constants.ERROR_CODE + " Invalid color for Creature! Try: 0-Red 1-Green 2-Blue 3-Yellow 4-Magenta 5-White ");
+                            return;
+                        }
                     }
 
-                    Constants.Color agentColor = Constants.Color.AGENT_YELLOW;
+                    Constants.Color agentColor = Constants.Color.AGENT_RED;
                     switch (color){
-                        case 1:
+                        case 0:
                             agentColor = Constants.Color.AGENT_RED;
                             break;
-                        case 2:
+                        case 1:
                             agentColor = Constants.Color.AGENT_GREEN;
                             break;
+                        case 2:
+                            agentColor = Constants.Color.AGENT_BLUE;
+                            break;
                         case 3:
+                            agentColor = Constants.Color.AGENT_YELLOW;
+                            break;
+                        case 4:
                             agentColor = Constants.Color.AGENT_MAGENTA;
+                            break;
+                        case 5:
+                            agentColor = Constants.Color.AGENT_WHITE;
                             break;
                     }
 

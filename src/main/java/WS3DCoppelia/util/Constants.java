@@ -29,10 +29,12 @@ public class Constants {
         ORANGE(Arrays.asList( 0.95,  0.65,  0.25), "Orange"),
         GREY(Arrays.asList( 0.5,  0.5,  0.5), "Grey"),
         BROWN(Arrays.asList( 0.6,  0.4,  0.25), "Brown"),
-        AGENT_YELLOW(Arrays.asList( 1.0,  0.8,  0.25), "Yellow"),
-        AGENT_GREEN(Arrays.asList( 0.55,  0.8,  0.15), "Green"),
-        AGENT_MAGENTA(Arrays.asList( 0.4,  0.3,  0.57), "Magenta"),
         AGENT_RED(Arrays.asList( 0.98,  0.25,  0.27), "Red"),
+        AGENT_GREEN(Arrays.asList( 0.55,  0.8,  0.15), "Green"),
+        AGENT_BLUE(Arrays.asList( 0.27,  0.25,  0.9), "Blue"),
+        AGENT_YELLOW(Arrays.asList( 1.0,  0.8,  0.25), "Yellow"),
+        AGENT_MAGENTA(Arrays.asList( 0.8,  0.3,  0.8), "Magenta"),
+        AGENT_WHITE(Arrays.asList( 0.85,  0.85,  0.85), "White"),
         DS_YELLOW(Arrays.asList( 0.90,  0.80,  0.15), "Yellow");
 
         private final List<Double> rgb;
