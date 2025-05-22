@@ -457,8 +457,8 @@ public class Creature extends Identifiable {
 
     private void execMove(List<Double> params) {
         try {
-            double targetVel = Math.min(0.08,params.get(0));
-            vel = targetVel;
+            double targetVel = params.get(0);
+            vel = Math.min(0.08, targetVel);
             double goalX = params.get(1);
             double goalY = params.get(2);
 
