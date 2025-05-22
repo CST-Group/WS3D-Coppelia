@@ -267,6 +267,10 @@ public class Creature extends Identifiable {
                         thing = getThing(command, inWorldThings);
                         if (thing != null)
                             this.execUnhide(thing);
+                        break;
+                    case "refill":
+                        this.execRefill();
+                        break;
 
                     default:
                 }
@@ -445,6 +449,12 @@ public class Creature extends Identifiable {
         }
     }
 
+    public void refill() {
+        synchronized (commandQueue) {
+            commandQueue.put("refill", null);
+        }
+    }
+
     private void execMove(List<Double> params) {
         try {
             double targetVel = Math.min(0.08,params.get(0));
@@ -586,6 +596,16 @@ public class Creature extends Identifiable {
             }
         } catch (CborException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void execRefill() {
+        try {
+            sim.callScriptFunction("increase_fuel", agentScript, 1000 - fuel);
+        } catch (CborException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Refill command return");
         }
     }
 

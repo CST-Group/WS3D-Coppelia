@@ -1852,13 +1852,11 @@ public class WS3DCoppeliaSocket {
     }
 
     void ProcessRefuel(StringTokenizer st) {
-        /*
         Creature c = getCreatureFromID(st);
         if (c == null) return;
 
         c.refill();
         getOutBuffer().append(c.getFuel() + "\r\n");
-         */
         getOutBuffer().append("Not Implemented");
     }
 
