@@ -29,6 +29,7 @@ public class Creature extends Identifiable {
     private long agentHandle;
     private long worldScript;
     private long agentScript;
+    private int index;
 
     private List<Double> pos;
     private double vel = 0.02;
@@ -60,7 +61,7 @@ public class Creature extends Identifiable {
      * @param width  Environment width for determining movement limits.
      * @param heigth Environment height for determining movement limits.
      */
-    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth) {
+    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, int index_) {
         color = Color.AGENT_GREEN;
         currColor = color.rgb();
         sim = sim_;
@@ -71,9 +72,10 @@ public class Creature extends Identifiable {
         for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
             leaflets[i] = new Leaflet();
         }
+        index = index_;
     }
 
-    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_) {
+    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_, int index_) {
         color = color_;
         currColor = color.rgb();
         sim = sim_;
@@ -84,9 +86,10 @@ public class Creature extends Identifiable {
         for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
             leaflets[i] = new Leaflet();
         }
+        index = index_;
     }
 
-    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_, double pitch) {
+    public Creature(RemoteAPIObjects._sim sim_, double x, double y, double width, double heigth, Color color_, double pitch, int index_) {
         color = color_;
         currColor = color.rgb();
         sim = sim_;
@@ -97,6 +100,7 @@ public class Creature extends Identifiable {
         for (int i = 0; i < Constants.NUM_LEAFLET_PER_AGENTS; i++) {
             leaflets[i] = new Leaflet();
         }
+        index = index_;
     }
     private void init() {
         try {
@@ -290,7 +294,8 @@ public class Creature extends Identifiable {
             return  (Thing) commandQueue.get(command);
     }
 
-    public void run(List<Thing> inWorldThings, List<Creature> inWorldAgents, long worldScript_) {
+    public void run(List<Thing> inWorldThings, List<Creature> inWorldAgents, long worldScript_, int index) {
+        this.index = index;
         if (!initialized) {
             worldScript = worldScript_;
             this.init();
@@ -607,6 +612,10 @@ public class Creature extends Identifiable {
         } catch (ArrayIndexOutOfBoundsException ex) {
             Logger.getLogger(Creature.class.getName()).log(Level.INFO, "Missed Refill command return");
         }
+    }
+
+    public int getIndex(){
+        return this.index;
     }
 
     public double getFuel() {

@@ -114,8 +114,10 @@ public class WS3DCoppelia {
             synchronized (inWorldCreatures) {
                 List<Creature> excludedAgents = inWorldCreatures.stream().filter(t -> t.removed).collect(Collectors.toList());
                 inWorldCreatures.removeAll(excludedAgents);
+                int i = 0;
                 for (Creature agt : inWorldCreatures) {
-                    agt.run(inWorldThings, inWorldCreatures, worldScript);
+                    agt.run(inWorldThings, inWorldCreatures, worldScript, i);
+                    i++;
                 }
             }
         }
@@ -211,7 +213,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
         
-        Creature newAgent = new Creature(sim, x, y, width, heigth);
+        Creature newAgent = new Creature(sim, x, y, width, heigth, inWorldCreatures.size());
         synchronized(inWorldCreatures){
             inWorldCreatures.add(newAgent);
         }
@@ -232,7 +234,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Creature newAgent = new Creature(sim, x, y, width, heigth, color);
+        Creature newAgent = new Creature(sim, x, y, width, heigth, color, inWorldCreatures.size());
         synchronized(inWorldCreatures){
             inWorldCreatures.add(newAgent);
         }
@@ -244,7 +246,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Creature newAgent = new Creature(sim, x, y, width, heigth, color, pitch);
+        Creature newAgent = new Creature(sim, x, y, width, heigth, color, pitch, inWorldCreatures.size());
         synchronized(inWorldCreatures){
             inWorldCreatures.add(newAgent);
         }
@@ -256,7 +258,7 @@ public class WS3DCoppelia {
         x = (x > width) ? width : (x < 0.05f ? 0.05f: x );
         y = (y > heigth) ? heigth : (y < 0.05f ? 0.05f: y );
 
-        Creature newAgent = new Creature(sim, x, y, width, heigth, color);
+        Creature newAgent = new Creature(sim, x, y, width, heigth, color, inWorldCreatures.size());
         newAgent.setNPC(true);
         synchronized(inWorldCreatures){
             inWorldCreatures.add(newAgent);

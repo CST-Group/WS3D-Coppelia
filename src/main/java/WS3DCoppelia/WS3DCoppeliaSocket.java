@@ -676,7 +676,7 @@ public class WS3DCoppeliaSocket {
             //Creature info:
             getOutBuffer().append(" " +
                     c.getName() + " "
-                    + mySim.getAllCreatures().indexOf(c) + " "
+                    + c.getIndex() + " "
                     + c.getX() + " "
                     + c.getY() + " "
                     + "0.4 "
