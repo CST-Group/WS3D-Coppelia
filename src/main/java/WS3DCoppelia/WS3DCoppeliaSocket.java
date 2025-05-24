@@ -719,17 +719,27 @@ public class WS3DCoppeliaSocket {
 
     void ProcessWorldReset() {
         try {
+            mySim.getAllCreatures().clear();
+            mySim.getAllThings().clear();
+            Thread.sleep(100);
             mySim.stopSimulation();
-        } catch (CborException e) {
-            log.info("Simulation not stopped");
+        } catch (CborException | InterruptedException e ) {
+            getOutBuffer().append(Constants.ERROR_CODE + "Simulation not stopped");
+            return;
+        }
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            getOutBuffer().append(Constants.ERROR_CODE + "Simulation not restarted");
+            return;
         }
         try {
             mySim.startSimulation();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (CborException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | CborException e) {
+            getOutBuffer().append(Constants.ERROR_CODE + "Simulation not restarted");
+            return;
         }
+        getOutBuffer().append("World reset");
     }
 
     void ProcessInitialEnvironmentParameters(StringTokenizer st) {

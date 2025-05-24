@@ -29,10 +29,12 @@ public class WS3DCoppelia {
     private Timer t;
     private List<Creature> inWorldCreatures = Collections.synchronizedList(new LinkedList<>());
     private List<Thing> inWorldThings = Collections.synchronizedList(new LinkedList<>());
+    private final Boolean messageSemaphore = true;
     private double width = 8, heigth = 6;
     private Long worldScript;
     private boolean running = false;
     private Thing currentDS;
+    private WS3DCoppelia.mainTimerTask tt = null;
 
     /**
      * A connection to CoppeliaSim is created and necessary model files are loaded.
@@ -72,7 +74,9 @@ public class WS3DCoppelia {
 
     public boolean isConnected() {
         try {
-            sim.getSimulationTime();
+            synchronized (messageSemaphore) {
+                sim.getSimulationTime();
+            }
             return true;
         } catch (Exception t){
             return false;
@@ -101,37 +105,39 @@ public class WS3DCoppelia {
     }
     
     public void updateState(){
+        synchronized (messageSemaphore) {
         try {
-            synchronized (inWorldThings) {
-                List<Thing> excludedThings = inWorldThings.stream().filter(t -> t.removed).collect(Collectors.toList());
-                List<Thing> notInitialized = inWorldThings.stream().filter(t -> !t.isInitialized()).collect(Collectors.toList());
-                inWorldThings.removeAll(excludedThings);
-                if (notInitialized.size() > 2) Thing.bulkInit(notInitialized, sim);
-                for (Thing thg : inWorldThings) {
-                    thg.run();
+                synchronized (inWorldThings) {
+                    List<Thing> excludedThings = inWorldThings.stream().filter(t -> t.removed).collect(Collectors.toList());
+                    List<Thing> notInitialized = inWorldThings.stream().filter(t -> !t.isInitialized()).collect(Collectors.toList());
+                    inWorldThings.removeAll(excludedThings);
+                    if (notInitialized.size() > 2) Thing.bulkInit(notInitialized, sim);
+                    for (Thing thg : inWorldThings) {
+                        thg.run();
+                    }
+                }
+                synchronized (inWorldCreatures) {
+                    List<Creature> excludedAgents = inWorldCreatures.stream().filter(t -> t.removed).collect(Collectors.toList());
+                    inWorldCreatures.removeAll(excludedAgents);
+                    int i = 0;
+                    for (Creature agt : inWorldCreatures) {
+                        agt.run(inWorldThings, inWorldCreatures, worldScript, i);
+                        i++;
+                    }
                 }
             }
-            synchronized (inWorldCreatures) {
-                List<Creature> excludedAgents = inWorldCreatures.stream().filter(t -> t.removed).collect(Collectors.toList());
-                inWorldCreatures.removeAll(excludedAgents);
-                int i = 0;
-                for (Creature agt : inWorldCreatures) {
-                    agt.run(inWorldThings, inWorldCreatures, worldScript, i);
-                    i++;
+        catch(RuntimeException e){
+                System.out.println("Simulation crashed. Stopping simulation");
+                inWorldCreatures = Collections.synchronizedList(new LinkedList<>());
+                inWorldThings = Collections.synchronizedList(new LinkedList<>());
+                try {
+                    sim.stopSimulation();
+                } catch (Exception ex) {
+                    System.out.println("Already Stopped");
                 }
+                t.cancel();
+                running = false;
             }
-        }
-        catch (RuntimeException e){
-            System.out.println("Simulation crashed. Stopping simulation");
-            inWorldCreatures = Collections.synchronizedList(new LinkedList<>());
-            inWorldThings = Collections.synchronizedList(new LinkedList<>());
-            try {
-                sim.stopSimulation();
-            } catch (Exception ex) {
-                System.out.println("Already Stopped");
-            }
-            t.cancel();
-            running = false;
         }
     }
 
@@ -143,49 +149,55 @@ public class WS3DCoppelia {
      * @throws CborException
      */
     public void startSimulation() throws java.io.IOException, CborException{
-        client.setStepping(false);
-        sim.startSimulation();
-        
-        double startTime = sim.getSimulationTime();
-        while(sim.getSimulationTime() - startTime < 1){}
-        
-        Long floorHandle;
-        try{
-            floorHandle = sim.getObject("/Floor");
-            sim.removeModel(floorHandle);
-        } catch(RuntimeException ex){
-            System.out.println("No default floor to exclude");
+        if (!running) {
+            client.setStepping(false);
+            sim.startSimulation();
+
+            double startTime = sim.getSimulationTime();
+            while (sim.getSimulationTime() - startTime < 1) {
+            }
+
+            Long floorHandle;
+            try {
+                floorHandle = sim.getObject("/Floor");
+                sim.removeModel(floorHandle);
+            } catch (RuntimeException ex) {
+                System.out.println("No default floor to exclude");
+            }
+            floorHandle = sim.loadModel(System.getProperty("user.dir") + "/floor.ttm");
+            List<Double> floorSize = sim.getShapeBB(floorHandle);
+            floorSize.set(0, width);
+            floorSize.set(1, heigth);
+            sim.setShapeBB(floorHandle, floorSize);
+            List<Double> floorPos = Arrays.asList(new Double[]{width / 2, heigth / 2, -0.02});
+            sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+
+            worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
+
+            Long brickTreeHandle = sim.createDummy(0.01);
+            sim.setObjectAlias(brickTreeHandle, "Bricks");
+            Long foodTreeHandle = sim.createDummy(0.01);
+            sim.setObjectAlias(foodTreeHandle, "Foods");
+            Long jewelTreeHandle = sim.createDummy(0.01);
+            sim.setObjectAlias(jewelTreeHandle, "Jewels");
+            Long DSTreeHandle = sim.createDummy(0.01);
+            sim.setObjectAlias(DSTreeHandle, "Delivery");
+
+
+            updateState();
+            startTime = sim.getSimulationTime();
+            while (sim.getSimulationTime() - startTime < 2) {
+            }
+
+            if (tt == null) {
+                t = new Timer();
+                tt = new mainTimerTask(this);
+                t.scheduleAtFixedRate(tt, 100, 75);
+            }
+            tt.setEnabled(true);
+
+            running = true;
         }
-        floorHandle = sim.loadModel(System.getProperty("user.dir") + "/floor.ttm");
-        List<Double> floorSize = sim.getShapeBB(floorHandle);
-        floorSize.set(0, width);
-        floorSize.set(1, heigth);
-        sim.setShapeBB(floorHandle, floorSize);
-        List<Double> floorPos = Arrays.asList(new Double[]{width/2, heigth/2, -0.02});
-        sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
-        
-        worldScript = sim.getScript(sim.scripttype_childscript, floorHandle, "");
-
-        Long brickTreeHandle = sim.createDummy(0.01);
-        sim.setObjectAlias(brickTreeHandle, "Bricks");
-        Long foodTreeHandle = sim.createDummy(0.01);
-        sim.setObjectAlias(foodTreeHandle , "Foods");
-        Long jewelTreeHandle = sim.createDummy(0.01);
-        sim.setObjectAlias(jewelTreeHandle , "Jewels");
-        Long DSTreeHandle = sim.createDummy(0.01);
-        sim.setObjectAlias(DSTreeHandle , "Delivery");
-
-        
-        updateState();
-        startTime = sim.getSimulationTime();
-        while(sim.getSimulationTime() - startTime < 2){}
-
-        t = new Timer();
-        WS3DCoppelia.mainTimerTask tt;
-        tt = new mainTimerTask(this);
-        t.scheduleAtFixedRate(tt, 100, 75);
-
-        running = true;
     }
 
     /**
@@ -195,8 +207,12 @@ public class WS3DCoppelia {
      * @throws CborException
      */
     public void stopSimulation() throws CborException{
-        sim.stopSimulation();
-        running = false;
+        synchronized (messageSemaphore) {
+            sim.stopSimulation(true);
+            if (tt != null)
+                tt.setEnabled(false);
+            running = false;
+        }
     }
 
     /**
@@ -354,13 +370,15 @@ public class WS3DCoppelia {
         this.width = width / 100.0;
         if (running){
             try{
-                Long floorHandle = sim.getObject("/Floor");
-                List<Double> floorSize = sim.getShapeBB(floorHandle);
-                floorSize.set(0, this.width);
-                floorSize.set(1, heigth);
-                sim.setShapeBB(floorHandle, floorSize);
-                List<Double> floorPos = Arrays.asList(new Double[]{this.width/2, heigth/2, -0.02});
-                sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+                synchronized (messageSemaphore) {
+                    Long floorHandle = sim.getObject("/Floor");
+                    List<Double> floorSize = sim.getShapeBB(floorHandle);
+                    floorSize.set(0, this.width);
+                    floorSize.set(1, heigth);
+                    sim.setShapeBB(floorHandle, floorSize);
+                    List<Double> floorPos = Arrays.asList(new Double[]{this.width / 2, heigth / 2, -0.02});
+                    sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+                }
             } catch (CborException e) {
                 throw new RuntimeException(e);
             }
@@ -371,13 +389,15 @@ public class WS3DCoppelia {
         this.heigth = heigth / 1000.0;
         if (running){
             try{
-                Long floorHandle = sim.getObject("/Floor");
-                List<Double> floorSize = sim.getShapeBB(floorHandle);
-                floorSize.set(0, width);
-                floorSize.set(1, this.heigth);
-                sim.setShapeBB(floorHandle, floorSize);
-                List<Double> floorPos = Arrays.asList(new Double[]{width/2, this.heigth/2, -0.02});
-                sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+                synchronized (messageSemaphore) {
+                    Long floorHandle = sim.getObject("/Floor");
+                    List<Double> floorSize = sim.getShapeBB(floorHandle);
+                    floorSize.set(0, width);
+                    floorSize.set(1, this.heigth);
+                    sim.setShapeBB(floorHandle, floorSize);
+                    List<Double> floorPos = Arrays.asList(new Double[]{width / 2, this.heigth / 2, -0.02});
+                    sim.setObjectPosition(floorHandle, sim.handle_world, floorPos);
+                }
             } catch (CborException e) {
                 throw new RuntimeException(e);
             }
