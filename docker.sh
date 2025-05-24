@@ -2,7 +2,7 @@ xhost +
 
 XAUTH=`xauth info | grep file | awk '{print $3}'`
 
-sudo docker run --rm -it --name coppelia-sim \
+docker run --rm -it --name coppelia-sim \
     -e DISPLAY \
     --net=host \
     --device /dev/snd \
