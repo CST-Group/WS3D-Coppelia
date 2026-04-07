@@ -763,9 +763,6 @@ public class WS3DCoppeliaSocket {
         }
         if (st.hasMoreTokens()) {
             pathToFloorTexture = st.nextToken();
-        } else {
-            getOutBuffer().append(Constants.ERROR_CODE + " Environment settings: path to texture is missing!");
-            return;
         }
 
         mySim.setHeigth(height);
